@@ -1,0 +1,61 @@
+@media only screen and (max-width: 1366px) {
+  .hero_post_slide_v2 .grid_item .post_img .post_overlay .post_meta .meta_tag span {
+    margin-right: 0 px;
+    margin-left: 5px;
+  }
+
+  .olima_place_v1 .place_row .place_about_box .place_count_box .single_count {
+    margin-left: 20px;
+  }
+}
+
+@media only screen and (min-width: 992px) and (max-width: 1200px) {
+  .olima_highlights_post .post_filter .filter_btn {
+    margin-right: 30px;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+  .header_v3 .top_header .social_widget {
+    text-align: center;
+  }
+
+  .olima_breadcrumb .breadcrumb-link {
+    float: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .header_v3 .top_header .social_widget {
+    text-align: center;
+  }
+
+  .blog_v1 .grid_item .post_content {
+    margin-right: 0px;
+  }
+
+  .blog_v1 .grid_item .post_content .post_meta span {
+    margin-left: 5px;
+  }
+
+  .olima_highlights_post .post_filter .filter_btn {
+    margin-right: 15px;
+  }
+
+  .olima_breadcrumb .breadcrumb-link {
+    float: none;
+  }
+
+  .olima_shop_details .discription_area .discription_tabs .nav-tabs .nav-item {
+    margin-left: 10px;
+  }
+
+  .olima_blog_details .blog_details_wrapper .comment_area .single_comment:nth-child(2n+1) {
+    padding-right: 0px;
+  }
+
+  .user-dashbord .user-profile-details .order-details .progress-area-step .progress-steps li .progress-title {
+    padding-left: 0px;
+    padding-right: 20px;
+  }
+}

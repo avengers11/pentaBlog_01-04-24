@@ -1,0 +1,34 @@
+/* -----------------------------------------
+	Header 4 CSS
+----------------------------------------- */
+@media (min-width: 1200px) {
+  .header-area_v3 {
+    border-bottom: 1px solid var(--border-color);
+  }
+}
+.header-area_v3 .navbar-nav {
+  margin-inline-end: 20px;
+}
+.header-area_v3 .navbar-collapse {
+  flex-grow: initial;
+}
+.header-area_v3 .main-navbar .navbar-nav > .nav-item:first-child {
+  margin-inline-start: 0;
+}
+.header-area_v3 .main-navbar .navbar-nav > .nav-item:first-child > .nav-link {
+  padding-inline-start: 0;
+}
+.header-area_v3 .main-navbar .navbar-brand {
+  flex: auto;
+}
+.header-area_v3 .btn-icon-text i {
+  color: var(--color-primary);
+  background-color: var(--bg-primary-light);
+  border-radius: var(--radius-sm);
+}
+.header-area_v3 .search-form {
+  max-width: 160px;
+}
+.header-area_v3 .search-form .form-control {
+  --size: 45px;
+}

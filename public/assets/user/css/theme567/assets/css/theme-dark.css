@@ -1,0 +1,189 @@
+:root {
+    --color-medium: #3d3d3d;
+    --text-dark: #f2f2f2;
+    --text-medium: #c9c9c9;
+    --text-white: var(--color-white);
+    --text-light: var(--color-light);
+    --border-color: #36363D;
+    --border-color-2: #424242;
+    --bg-1: #27272E;
+    --bg-2: #0f101d;
+    --bg-white: #202028;
+    --bg-dark: var(--color-dark);
+}
+
+body {
+    color: var(--text-medium);
+}
+
+.theme-dark * {
+    box-shadow: none;
+}
+
+.theme-dark .header-area.is-sticky {
+    background: rgba(var(--color-dark-rgb), 0.9);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.theme-dark .header-area .main-navbar .menu-dropdown {
+    border: 1px solid var(--border-color);
+}
+
+.theme-dark .blog-area .card-content {
+    background-color: var(--bg-1);
+}
+
+.theme-dark .blog_v2 .blog_tag {
+    background: var(--bg-1);
+}
+
+.theme-dark .footer-area.bg-light {
+    background-color: var(--bg-white) !important;
+}
+
+.theme-dark .footer-area .social-link a {
+    background-color: var(--bg-1);
+}
+
+.pagination {
+    --bs-pagination-bg: var(--bg-1);
+    --bs-pagination-border-color: var(--border-color);
+}
+
+.user-dashboard .user-profile-details .order-details .progress-area-step .progress-steps li .icon,
+.user-dashboard .user-profile-details .order-details .progress-area-step .progress-steps li:after,
+.contact-form .form_group .form_control,
+.billing_form .form_group .form_control,
+.review_form .form_group .form_control,
+.preloader,
+a#cartIcon .cart-total,
+.popup-three .popup_main-content,
+.olima_blog_details .blog_details_wrapper .related_post .grid_item .post_content .post_meta,
+.olima_blog_details .blog_details_wrapper .post_share_tag .social_box ul li a,
+.olima_blog_details .blog_details_wrapper .post_content .post_meta,
+.faq-area-v1 .faq-details-wrapper .card .card-header,
+.olima_sidebar .widget_box.newsletter_widget,
+.olima_sidebar .widget_box.about_box,
+.olima_blog_grid .grid_item .post_content .btn_heart,
+.olima_blog_standard .grid_item .post_content .btn_heart,
+.olima_blog_masonry .grid_item .post_content .btn_heart,
+.related_post .grid_item .post_content .btn_heart,
+.page-item.disabled .page-link,
+table.dataTable tbody tr,
+.payment,
+.checkout-area-section .coupon,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover,
+.olima_blog_grid .grid_item .post_content .post_meta,
+.olima_blog_standard .grid_item .post_content .post_meta,
+.olima_blog_masonry .grid_item .post_content .post_meta,
+.related_post .grid_item .post_content .post_meta,
+.olima_contact .contact-form .form_group .form_control,
+.theme-dark .testimonial-area-v1 .testimonial_slide_one .testimonial_box .rating {
+    background: var(--bg-1) !important;
+}
+
+
+.table td,
+.table th,
+.nice-number button,
+.nice-number input,
+input:not([type='file']),
+textarea,
+select,
+.olima_cart .quantity-input button,
+.olima_cart .quantity-input input,
+.olima_cart .table_content,
+.user-dashboard .account-info,
+.user-dashboard .order-details,
+.user-dashboard .title,
+.faq-area-v1 .faq-details-wrapper .card .card-body,
+.olima_sidebar .widget_box.newsletter_widget .form_control,
+.olima_sidebar .widget_box.categories_widget ul li a,
+.page-item.disabled .page-link,
+.olima_blog_grid .grid_item,
+.olima_blog_standard .grid_item,
+.olima_blog_masonry .grid_item,
+.related_post .grid_item,
+.checkout-area-section .form .field-input input,
+.table thead th,
+.payment,
+.checkout-area-section .bottom .cart-total .cart-total-table,
+.checkout-area-section .bottom .cart-total .cart-total-table li,
+.checkout-area-section .bottom .cart-table tbody input,
+.checkout-area-section .payment-options,
+.checkout-area-section .bottom .cart-total .cart-total-table li span.col.col-title,
+.user-dashboard .user-sidebar,
+.user-dashboard .user-sidebar .links li,
+.user-dashboard .user-profile-details .edit-info-area .form_control,
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select,
+.olima_shop_details .discription_area .discription_tabs .nav-tabs {
+    border-color: var(--border-color);
+}
+
+input:not([type='file']),
+textarea,
+select,
+.close,
+.nice-number button,
+.nice-number input,
+.testimonial-area-v1 .testimonial_slide_one .testimonial_box .author_box span,
+.user-dashboard .user-profile-details .order-details .progress-area-step .progress-steps li .icon,
+.contact-form .form_group label,
+.billing_form .form_group label,
+.review_form .form_group label,
+.olima_cart .quantity-input button,
+.user-dashboard .user-sidebar .links li a,
+.olima_contact .contact_information .info_box span,
+.olima_contact .contact-form .form_group label,
+.olima_sidebar .widget_box.price_ranger_widget input,
+.gallery-area-v1 .filter-nav .filter-btn li,
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_processing,
+.dataTables_wrapper .dataTables_paginate,
+.checkout-area-section .form .field-label,
+.checkout-area-section .bottom .cart-total .cart-total-table li span.col,
+.olima_blog_grid .grid_item .post_content .btn_heart,
+.olima_blog_standard .grid_item .post_content .btn_heart,
+.olima_blog_masonry .grid_item .post_content .btn_heart,
+.related_post .grid_item .post_content .btn_heart {
+    color: var(--text-medium);
+}
+
+
+.olima_blog_grid .grid_item .post_content h3,
+.olima_blog_masonry .grid_item .post_content h3,
+.related_post .grid_item .post_content h3,
+.related_post .grid_item .post_content h3 {
+    color: var(--text-dark);
+}
+
+a#cartIcon .cart-length{
+    color: var(--text-dark) !important;
+}
+
+.user-dashboard .main-table .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    color: var(--text-dark) !important;
+}
+
+
+.user-dashboard .form-content .form_group .form_control,
+input:not([type='file']),
+textarea,
+select {
+    background-color: transparent;
+}
+
+.modal {
+    --bs-modal-bg: var(--bg-1);
+    --bs-modal-border-color: var(--border-color);
+    --bs-modal-header-border-color: var(--border-color);
+    --bs-modal-footer-border-color: var(--border-color);
+}
+
+.table {
+    --bs-table-color: var(--text-medium);
+}

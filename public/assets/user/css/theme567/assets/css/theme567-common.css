@@ -1,0 +1,43 @@
+.testimonial-area-v1 .testimonial_slide_one .testimonial_box .rating {
+    background-image: unset;
+    background-repeat: unset;
+    background-position: unset;
+    height: auto;
+}
+
+
+.pagination-wrap li .page-link {
+    line-height: 40px;
+}
+
+.faq-area-v1 .faq-details-wrapper .card .card-header {
+    color: var(--text-dark) !important;
+}
+.nav-link {
+    color: var(--text-dark);
+}
+
+.header-area .more-option .form-group {
+    margin-bottom: 0;
+}
+.header-area.header-static:not(.is-sticky) {
+    position: static;
+}
+.olima_breadcrumb .breadcrumb-title h1{
+    color: var(--text-white) !important;
+}
+
+
+.olima_sidebar .widget_box.featured_post .single_post .post_content h3, .olima_blog_grid .olima_sidebar .widget_box.featured_post .single_post .post_content h3, .olima_blog_standard .olima_sidebar .widget_box.featured_post .single_post .post_content h3, .olima_blog_details .olima_sidebar .widget_box.featured_post .single_post .post_content h3{
+    line-height: 1.3;
+}
+.olima_blog_grid .grid_item .post_content h3, .olima_blog_masonry .grid_item .post_content h3, .related_post .grid_item .post_content h3{
+    line-height: 1.3;
+    font-size: var(--font-size--h4);
+}
+.olima_blog_grid .grid_item .post_content .post_meta, .olima_blog_masonry .grid_item .post_content .post_meta, .related_post .grid_item .post_content .post_meta{
+    gap: 10px;
+}
+.post_meta span{
+    font-size: 14px;
+}

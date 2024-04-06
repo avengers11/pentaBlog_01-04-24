@@ -1,0 +1,12 @@
+/* -----------------------------------------
+	Header 2 CSS
+----------------------------------------- */
+@media (min-width: 1200px) {
+  .header-area_v2 {
+    border-bottom: 1px solid var(--border-color);
+  }
+}
+.header-area_v2 .btn-icon {
+  color: var(--color-primary);
+  background-color: var(--bg-primary-light);
+}

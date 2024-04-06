@@ -1,0 +1,91 @@
+/* -----------------------------------------
+	Footer CSS
+----------------------------------------- */
+.footer-area {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .footer-area :is(p, a, span) {
+    color: var(--text-medium);
+  }
+  .footer-area .footer-widget {
+    margin-bottom: 30px;
+  }
+  .footer-area .footer-widget ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+  }
+  .footer-area .footer-widget .title {
+    position: relative;
+    text-transform: capitalize;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+  }
+  .footer-area .footer-widget .title::before {
+    position: absolute;
+    content: "";
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 50px;
+    height: 2px;
+    margin-inline-start: 0;
+    margin-inline-end: auto;
+    background: linear-gradient(89.97deg, var(--color-primary) 19%, var(--bg-white) 63%);
+  }
+  .footer-area .footer-widget p {
+    margin-bottom: 25px;
+  }
+  .footer-area .info-list li,
+  .footer-area .footer-links li {
+    position: relative;
+    overflow: hidden;
+    font-size: var(--font-sm);
+  }
+  .footer-area .info-list li:not(:last-child),
+  .footer-area .footer-links li:not(:last-child) {
+    margin-bottom: 10px;
+  }
+  .footer-area .info-list li a,
+  .footer-area .footer-links li a {
+    display: block;
+  }
+  .footer-area .info-list li a:hover,
+  .footer-area .footer-links li a:hover {
+    color: var(--color-primary);
+  }
+  .footer-area .footer-links a {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    transition: all 0.3s linear;
+  }
+  .footer-area .info-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .footer-area .info-list li * {
+    line-height: 1;
+  }
+  .footer-area .info-list li:not(:last-child) {
+    margin-bottom: 18px;
+  }
+  .footer-area .info-list i {
+    color: var(--color-primary);
+    font-size: 16px;
+  }
+  .footer-area .copy-right-area {
+    text-align: center;
+  }
+  .footer-area .social-link a {
+    color: var(--color-primary);
+    background-color: var(--bg-white);
+    box-shadow: var(--shadow-sm);
+  }
+  .footer-area .social-link a:hover {
+    color: var(--text-white);
+    background-color: var(--color-primary) !important;
+  }

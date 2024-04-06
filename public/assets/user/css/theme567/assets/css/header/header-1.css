@@ -1,0 +1,29 @@
+/* -----------------------------------------
+	Header 1 CSS
+----------------------------------------- */
+.header-area_v1.is-sticky {
+  background: rgba(var(--color-dark-rgb), 0.9);
+  border-bottom: 1px solid rgba(var(--color-white-rgb), 0.2);
+}
+.header-area_v1.is-sticky .main-navbar .menu-dropdown {
+  border: 1px solid var(--border-color);
+}
+.header-area_v1 .main-responsive-nav {
+  background-color: var(--bg-white);
+}
+.header-area_v1 :is(.nav-link:not(:is(.active, .menu-dropdown .nav-link)), .btn-icon, .btn-search, .btn-icon-text, .nice-select .current) {
+  color: var(--text-white);
+}
+@media (max-width: 1199.98px) {
+  .header-area_v1 :is(.nav-link:not(:is(.active, .menu-dropdown .nav-link)), .btn-icon, .btn-search, .btn-icon-text, .nice-select .current) {
+    color: var(--text-dark);
+  }
+}
+.header-area_v1 .nice-select::after {
+  color: var(--text-white);
+}
+@media (max-width: 1199.98px) {
+  .header-area_v1 .nice-select::after {
+    color: var(--text-dark);
+  }
+}

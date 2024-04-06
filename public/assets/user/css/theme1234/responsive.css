@@ -1,0 +1,137 @@
+/* Extra Large Device */
+@media only screen and (min-width: 1200px) and (max-width: 1400px) {}
+
+/* Large Device */
+@media only screen and (min-width: 992px) and (max-width : 1199px) {
+    h3 {
+        font-size: 20px;
+    }
+
+    .service_v1 .service_box .service_info .postion_box span {
+        display: block;
+        font-size: 16px;
+    }
+
+    .gyst_partner .grid_box {
+        padding: 50px 30px;
+    }
+
+    .gyst_partner .grid_box .icon {
+        min-height: 150px;
+        min-width: 150px;
+        max-height: 150px;
+        max-width: 150px;
+    }
+
+    .gyst_partner .grid_box .info {
+        margin-left: 30px;
+    }
+
+    .gyst_partner .grid_box .info h2 {
+        font-size: 36px;
+    }
+
+    .section_title h2 {
+        font-size: 36px;
+    }
+}
+
+/* Medium Device */
+@media only screen and (min-width: 768px) and (max-width : 991px) {}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 991px) {
+    h3 {
+        font-size: 24px;
+    }
+
+    .olima_footer .post_img img {
+        max-width: 100px;
+    }
+
+    .service_v1 .service_box {
+        margin-bottom: 90px;
+    }
+
+    .team_box,
+    .gyst_ibm .grid_box {
+        margin-bottom: 60px;
+    }
+
+    .section_title h2 {
+        font-size: 32px;
+    }
+}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 767px) {
+    h2 {
+        font-size: 30px;
+    }
+
+    .testimonial_upload .upload_file .text_box {
+        padding: 0 20px;
+    }
+
+    .testimonial_upload .upload_file .text_box h3 {
+        font-size: 18px;
+    }
+
+    .testimonial_upload .upload_file .text_box p {
+        font-size: 16px;
+    }
+
+    .gyst_partner .grid_box {
+        flex-direction: column;
+        padding: 40px 20px;
+    }
+
+    .gyst_partner .grid_box .info {
+        margin-left: 0;
+        margin-top: 30px;
+    }
+
+    .gyst_ibm .grid_box {
+        margin-bottom: 100px;
+    }
+
+    .main_footer .text {
+        text-align: center;
+    }
+
+    .main_footer .link {
+        float: none;
+        text-align: center;
+        padding-top: 10px;
+    }
+}
+
+/* Mobile Devices, Tablets */
+@media only screen and (max-width: 359px) {
+    h2 {
+        font-size: 24px;
+    }
+
+    h3 {
+        font-size: 20px;
+    }
+
+    .testimonial_upload .upload_file .text_box {
+        padding: 0 20px;
+    }
+
+    .testimonial_upload .upload_file .text_box h3 {
+        font-size: 16px;
+    }
+
+    .testimonial_upload .upload_file .text_box p {
+        font-size: 14px;
+    }
+
+    .gyst_ibm .grid_box {
+        margin-bottom: 100px;
+    }
+}
+
+/* Mobile Devices, Tablets */
+@media only screen and (min-width: 450px) and (max-width : 767px) {}
