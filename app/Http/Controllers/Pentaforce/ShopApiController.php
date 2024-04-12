@@ -2,17 +2,30 @@
 
 namespace App\Http\Controllers\Pentaforce;
 
+use Exception;
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\User\Language;
+use App\Models\User\UserItem;
+use App\Models\User\UserOrder;
 use App\Models\User\UserCoupon;
+use App\Models\User\UserItemImage;
+use Illuminate\Support\Facades\DB;
+use Mews\Purifier\Facades\Purifier;
 use App\Http\Controllers\Controller;
+use App\Models\User\UserItemContent;
 use App\Models\User\UserShopSetting;
 use App\Models\User\UserItemCategory;
+use App\Models\User\UserOfflineGateway;
+use App\Models\User\UserPaymentGeteway;
 use App\Models\User\UserShippingCharge;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use App\Models\User\UserItemSubCategory;
+use Illuminate\Support\Facades\Validator;
+use App\Models\Customer;
+use App\Models\BasicExtended;
+use PHPMailer\PHPMailer\PHPMailer;
 
 class ShopApiController extends Controller
 {
@@ -287,9 +300,6 @@ class ShopApiController extends Controller
     }
     public function itemCategoryDelete(Request $request, User $user)
     {
-        // {
-        //     "category_id" : 80
-        // }
         $category = UserItemCategory::where('id', $request->category_id)->where('user_id', $user->id)->first();
         if ($category->items()->count() > 0) {
             return response()->json(['success' => 'First, delete all the item under the selected categories!'], 200);
@@ -306,10 +316,6 @@ class ShopApiController extends Controller
     }
     public function itemCategoryFeature(Request $request, User $user)
     {
-        // {
-        //     "category_id" : 79,
-        //     "is_feature" : 0
-        // }
         $category = UserItemCategory::where('id', $request->category_id)->where('user_id', $user->id)->first();
         $category->is_feature = $request->is_feature;
         $category->save();
@@ -325,9 +331,6 @@ class ShopApiController extends Controller
     // itemSubcategory
     public function itemSubcategory(Request $request, User $user)
     {
-        // {
-        //     "language" : "en"
-        // }
         $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
         $lang_id = $lang->id;
         $data['categories'] = UserItemCategory::where('language_id', $lang_id)->where('user_id', $user->id)->orderBy('name', 'ASC')->get();
@@ -340,12 +343,6 @@ class ShopApiController extends Controller
     }
     public function itemSubcategoryAdd(Request $request, User $user)
     {
-        // {
-        //     "user_language_id" : 162,
-        //     "name" : "Sub-cat",
-        //     "category_id" : 79,
-        //     "status": 1
-        // }
         $validator = Validator::make($request->all(), [
             'user_language_id' => 'required',
             'name' => 'required|max:255',
@@ -374,12 +371,6 @@ class ShopApiController extends Controller
     }
     public function itemSubcategoryUpdate(Request $request, User $user)
     {
-        // {
-        //     "name" : "Sub-cat2333",
-        //     "category_id" : 79,
-        //     "status": 1,
-        //     "subcategory_id" : 129
-        // }
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'category_id' => 'required',
@@ -404,9 +395,6 @@ class ShopApiController extends Controller
     }
     public function itemSubcategoryDelete(Request $request, User $user)
     {
-        // {
-        //     "subcategory_id" : 129
-        // }
         $category = UserItemSubCategory::where('id', $request->subcategory_id)->where('user_id', $user->id)->first();
         if ($category->items()->count() > 0) {
             return response()->json(['error', 'First, delete all the item under the selected categories!'], 200);
@@ -417,5 +405,483 @@ class ShopApiController extends Controller
     }
 
 
-    // Add Item
+    /*
+    Add Item - DIGITAL PRODUCT
+    ==========================
+    */
+    public function itemDigitalProductAdd(Request $request, User $user)
+    {
+        $languages = Language::where('user_id', $user->id)->get();
+        $messages = [];
+        $rules = [];
+        $allowedExtensions = array('jpg', 'jpeg', 'png', 'svg');
+        $sliderImgExts = [];
+
+        $rules['image'] = [
+            'required',
+            function ($attribute, $value, $fail) use ($allowedExtensions, $sliderImgExts) {
+                if (!empty($sliderImgExts)) {
+                    foreach ($sliderImgExts as $sliderImgExt) {
+                        if (!in_array($sliderImgExt, $allowedExtensions)) {
+                            $fail('Only .jpg, .jpeg, .png and .svg file is allowed for slider image.');
+                            break;
+                        }
+                    }
+                }
+            }
+        ];
+        $messages['image.required'] = 'The slider Image is required.';
+        $rules['status'] = 'required';
+        $rules['current_price'] = 'required|numeric';
+        $rules['previous_price'] = 'nullable|numeric';
+
+        foreach ($languages as $language) {
+            $rules[$language->code . '_title'] = 'required';
+            $rules[$language->code . '_category'] = 'required';
+            $rules[$language->code . '_subcategory'] = 'required';
+            $messages[$language->code . '_category.required'] = 'The Category field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_subcategory.required'] = 'The Subcategory field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_title.required'] = 'The Title field is required for ' . $language->name . ' language.';
+            $allowedExts = array('zip');
+        }
+
+
+        // if product type is 'physical'
+        if ($request->type == 'physical') {
+            $rules['sku'] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        // if the type is digital && 'upload file' method is selected, then store the downloadable file
+        if ($request->type == 'digital' && $request->file_type == 'upload') {
+            if ($request->hasFile('download_file')) {
+                $filename = $request->download_file;
+            }
+        }
+
+        $item = new UserItem();
+        // set a name for the thumbnail image and store it to local storage
+        $thumbnailImgName = $request->thumbnail;
+        $item->user_id = $user->id;
+        $item->stock = $request->stock;
+        $item->sku = $request->sku;
+        $item->thumbnail = $thumbnailImgName;
+        $item->status = $request->status;
+        $item->current_price = $request->current_price;
+        $item->previous_price = $request->previous_price ?? 0.00;
+        $item->type = $request->type;
+        $item->download_file = $filename ?? null;
+        $item->download_link = $request->download_link;
+        $item->save();
+        foreach ($request->image as $value) {
+            UserItemImage::create([
+                'item_id' => $item->id,
+                'image' => $value,
+            ]);
+        }
+        // store varations as json
+        foreach ($languages as $language) {
+            $adContent = new UserItemContent();
+            $adContent->item_id = $item->id;
+            $adContent->language_id = $language->id;
+            $adContent->category_id = $request[$language->code . '_category'];
+            $adContent->subcategory_id = $request[$language->code . '_subcategory'];
+            $adContent->title = $request[$language->code . '_title'];
+            $adContent->slug = make_slug($request[$language->code . '_title']);
+            $adContent->summary = $request[$language->code . '_summary'];
+            $adContent->tags = $request[$language->code . '_tags'];
+            $adContent->description = Purifier::clean($request[$language->code . '_description']);
+            $adContent->meta_keywords = $request[$language->code . '_keyword'];
+            $adContent->meta_description = $request[$language->code . '_meta_keyword'];
+            $adContent->save();
+        }
+
+        return response()->json(['success', 'Item added successfully!'], 200);
+    }
+    public function itemDigitalProduct(Request $request, User $user)
+    {
+        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
+        $lang_id = $lang->id;
+        $data['items'] = DB::table('user_items')->where('user_items.user_id', $user->id)
+            ->Join('user_item_contents', 'user_items.id', '=', 'user_item_contents.item_id')
+            ->join('user_item_categories', 'user_item_contents.category_id', '=', 'user_item_categories.id')
+            ->select('user_items.*', 'user_items.id AS item_id', 'user_item_contents.*', 'user_item_categories.name AS category')
+            ->orderBy('user_items.id', 'DESC')
+            ->where('user_item_contents.language_id', '=', $lang_id)
+            ->where('user_item_categories.language_id', '=', $lang_id)
+            ->get();
+        $data['lang_id'] = $lang_id;
+
+        return response()->json($data);
+    }
+    public function itemDigitalProductUpdate(Request $request, User $user)
+    {
+        $languages = Language::where('user_id', $user->id)->get();
+        $messages = [];
+        $rules = [];
+        $allowedExtensions = array('jpg', 'jpeg', 'png', 'svg');
+        $sliderImgExts = [];
+
+        $rules['image'] = [
+            'required',
+            function ($attribute, $value, $fail) use ($allowedExtensions, $sliderImgExts) {
+                if (!empty($sliderImgExts)) {
+                    foreach ($sliderImgExts as $sliderImgExt) {
+                        if (!in_array($sliderImgExt, $allowedExtensions)) {
+                            $fail('Only .jpg, .jpeg, .png and .svg file is allowed for slider image.');
+                            break;
+                        }
+                    }
+                }
+            }
+        ];
+        $messages['image.required'] = 'The slider Image is required.';
+        $rules['status'] = 'required';
+        $rules['current_price'] = 'required|numeric';
+        $rules['previous_price'] = 'nullable|numeric';
+
+        foreach ($languages as $language) {
+            $rules[$language->code . '_title'] = 'required';
+            $rules[$language->code . '_category'] = 'required';
+            $rules[$language->code . '_subcategory'] = 'required';
+            $messages[$language->code . '_category.required'] = 'The Category field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_subcategory.required'] = 'The Subcategory field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_title.required'] = 'The Title field is required for ' . $language->name . ' language.';
+        }
+
+
+        // if product type is 'physical'
+        if ($request->type == 'physical') {
+            $rules['sku'] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        // if the type is digital && 'upload file' method is selected, then store the downloadable file
+        if ($request->type == 'digital' && $request->file_type == 'upload') {
+            if ($request->hasFile('download_file')) {
+                $filename = $request->download_file;
+            }
+        }
+
+        $item = UserItem::where('id', $request->item_id)->where('user_id', $user->id)->first();
+        // set a name for the thumbnail image and store it to local storage
+        $thumbnailImgName = $request->thumbnail;
+        $item->user_id = $user->id;
+        $item->stock = $request->stock;
+        $item->sku = $request->sku;
+        $item->thumbnail = $thumbnailImgName;
+        $item->status = $request->status;
+        $item->current_price = $request->current_price;
+        $item->previous_price = $request->previous_price ?? 0.00;
+        $item->type = $request->type;
+        $item->download_file = $filename ?? null;
+        $item->download_link = $request->download_link;
+        $item->save();
+
+        // delete all gallary img
+        $allGalleryImg = UserItemImage::where('item_id', $item->id)->get();
+        foreach ($allGalleryImg as $value) {
+            Storage::url($value);
+            $value->delete();
+        }
+
+        // add all gallary img
+        foreach ($request->image as $value) {
+            UserItemImage::create([
+                'item_id' => $item->id,
+                'image' => $value,
+            ]);
+        }
+
+        // store varations as json
+        foreach ($languages as $language) {
+            $adContent = UserItemContent::where('item_id', $request->item_id)
+                ->where('language_id', $language->id)
+                ->first();
+            $adContent->item_id = $item->id;
+            $adContent->language_id = $language->id;
+            $adContent->category_id = $request[$language->code . '_category'];
+            $adContent->subcategory_id = $request[$language->code . '_subcategory'];
+            $adContent->title = $request[$language->code . '_title'];
+            $adContent->slug = make_slug($request[$language->code . '_title']);
+            $adContent->summary = $request[$language->code . '_summary'];
+            $adContent->tags = $request[$language->code . '_tags'];
+            $adContent->description = Purifier::clean($request[$language->code . '_description']);
+            $adContent->meta_keywords = $request[$language->code . '_keyword'];
+            $adContent->meta_description = $request[$language->code . '_meta_keyword'];
+            $adContent->save();
+        }
+
+        return response()->json(['success', 'Item update successfully!'], 200);
+    }
+    public function itemDigitalProductDelete(Request $request, User $user)
+    {
+        $item = UserItem::where('id', $request->item_id)->where('user_id', $user->id)->first();
+        Storage::url($item->thumbnail);
+
+        foreach ($item->sliders as $key => $image) {
+            Storage::url($image->image);
+            $image->delete();
+        }
+
+        // remove this item's order // if exist
+        if ($item->orderItems->count()) {
+            foreach ($item->orderItems as  $value) {
+                $order = UserOrder::findOrFail($value->user_order_id);
+                if ($order->orderitems->count() > 1) {
+                } else {
+                    $order->delete();
+                }
+            }
+            $item->orderItems()->delete();
+        }
+
+        // remove this item from wishlist // if exist
+        $item->wishlist()->delete();
+        $item->itemContents()->delete();
+        $item->delete();
+        return response()->json(['success', 'Item deleted successfully!'], 200);
+    }
+
+
+    /*
+    Item - Manage Orders
+    ==========================
+    */
+    public function itemOrderDetails($id)
+    {
+        $order = UserOrder::findOrFail($id);
+        return response()->json([$order], 200);
+    }
+    public function itemOrderStatus(Request $request, User $user)
+    {
+
+        $po = UserOrder::find($request->order_id);
+
+        $po->order_status = $request->order_status;
+        $po->save();
+
+        $user = Customer::findOrFail($po->customer_id);
+
+        $be = BasicExtended::first();
+
+        $sub = 'Order Status Update';
+
+        $to = $user->email;
+        // Send Mail to Buyer
+        $mail = new PHPMailer(true);
+        if ($be->is_smtp == 1) {
+            try {
+                $mail->isSMTP();
+                $mail->Host       = $be->smtp_host;
+                $mail->SMTPAuth   = true;
+                $mail->Username   = $be->smtp_username;
+                $mail->Password   = $be->smtp_password;
+                $mail->SMTPSecure = $be->encryption;
+                $mail->Port       = $be->smtp_port;
+
+                //Recipients
+                $mail->setFrom($be->from_mail, $be->from_name);
+                $mail->addAddress($user->email, $user->fname);
+
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = $sub;
+                $mail->Body    = 'Hello <strong>' . $user->fname . '</strong>,<br/>Your order status is ' . $request->order_status . '.<br/>Thank you.';
+                $mail->send();
+            } catch (Exception $e) {
+                // die($e->getMessage());
+            }
+        } else {
+            try {
+
+                //Recipients
+                $mail->setFrom($be->from_mail, $be->from_name);
+                $mail->addAddress($user->email, $user->fname);
+
+
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = $sub;
+                $mail->Body    = 'Hello <strong>' . $user->fname . '</strong>,<br/>Your order status is ' . $request->order_status . '.<br/>Thank you.';
+
+                $mail->send();
+            } catch (Exception $e) {
+                // die($e->getMessage());
+            }
+        }
+
+
+        return response()->json(['success', 'Order status changed successfully!'], 200);
+    }
+    public function itemOrderPaymentStatus(Request $request, User $user)
+    {
+        $po = UserOrder::find($request->order_id);
+        $po->payment_status = $request->payment_status;
+
+        $user = Customer::findOrFail($po->customer_id);
+        $be = BasicExtended::first();
+        $sub = 'Payment Status Updated';
+        $po->save();
+
+        // Send Mail to Buyer
+        $mail = new PHPMailer(true);
+        if ($be->is_smtp == 1) {
+            try {
+                $mail->isSMTP();
+                $mail->Host       = $be->smtp_host;
+                $mail->SMTPAuth   = true;
+                $mail->Username   = $be->smtp_username;
+                $mail->Password   = $be->smtp_password;
+                $mail->SMTPSecure = $be->encryption;
+                $mail->Port       = $be->smtp_port;
+
+                //Recipients
+                $mail->setFrom($be->from_mail, $be->from_name);
+                $mail->addAddress($user->email, $user->fname);
+
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = $sub;
+                $mail->Body    = 'Hello <strong>' . $user->username . '</strong>,<br/>
+                 Your Payment status is ' . $request->payment_status . '.<br/>
+                 Your Order number is ' . $po->order_number . '.<br/>
+                 See Orders: <a href="' . route('customer.orders-details', ['id' => $po->id, $user->username]) . '">' . route('customer.orders-details', ['id' => $po->id, $user->username]) . '"</a>" <br/>
+                 Thank you.';
+                $mail->send();
+            } catch (Exception $e) {
+                // die($e->getMessage());
+            }
+        } else {
+            try {
+                //Recipients
+                $mail->setFrom($be->from_mail, $be->from_name);
+                $mail->addAddress($user->email, $user->fname);
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = $sub;
+                $mail->Body    = 'Hello <strong>' . $user->username . '</strong>,<br/>
+                 Your Payment status is ' . $request->payment_status . '.<br/>
+                 Your Order number is ' . $po->order_number . '.<br/>
+                 See Orders: <a href="' . route('customer.orders-details', ['id' => $po->id, $user->username]) . '">' . route('customer.orders-details', ['id' => $po->id, $user->username]) . '"</a>" <br/>
+                 Thank you.';
+                $mail->send();
+            } catch (Exception $e) {
+                // die($e->getMessage());
+            }
+        }
+
+        return response()->json(['success', 'Payment status changed successfully!'], 200);
+    }
+    public function itemOrderDelete(Request $request, User $user)
+    {
+        $order = UserOrder::where('id', $request->order_id)->where('user_id', $user->id)->first();
+        // @unlink(public_path('assets/front/invoices/' . $order->invoice_number));
+        // @unlink(public_path('assets/front/receipt/' . $order->receipt));
+        
+        if(count($order->orderitems) > 0){
+            foreach ($order->orderitems as $item) {
+                $item->delete();
+            }
+        }
+        $order->delete();
+
+        return response()->json(['success', 'Item order deleted successfully!'], 200);
+    }
+    public function itemOrderAll(Request $request, User $user)
+    {
+        $search = $request->search;
+        $data['orders'] =
+            UserOrder::when($search, function ($query, $search) {
+                return $query->where('order_number', $search);
+            })
+            ->orderBy('id', 'DESC')->get();
+
+        return response()->json([$data], 200);
+    }
+    public function itemOrderPending(Request $request, User $user)
+    {
+        $search = $request->search;
+        $data['orders'] = UserOrder::when($search, function ($query, $search) {
+            return $query->where('order_number', $search);
+        })
+            ->where('order_status', 'pending')->orderBy('id', 'DESC')->get();
+
+        return response()->json([$data], 200);
+    }
+    public function itemOrderProcessing(Request $request, User $user)
+    {
+        $search = $request->search;
+        $data['orders'] = UserOrder::when($search, function ($query, $search) {
+            return $query->where('order_number', $search);
+        })
+            ->where('order_status', 'processing')->orderBy('id', 'DESC')->get();
+
+        return response()->json([$data], 200);
+    }
+    public function itemOrderCompleted(Request $request, User $user)
+    {
+        $search = $request->search;
+        $data['orders'] = UserOrder::when($search, function ($query, $search) {
+            return $query->where('order_number', $search);
+        })
+            ->where('order_status', 'completed')->orderBy('id', 'DESC')->get();
+
+        return response()->json([$data], 200);
+    }
+    public function itemOrderRejected(Request $request, User $user)
+    {
+        $search = $request->search;
+        $data['orders'] = UserOrder::when($search, function ($query, $search) {
+            return $query->where('order_number', $search);
+        })
+            ->where('order_status', 'rejected')->orderBy('id', 'DESC')->get();
+
+        return response()->json([$data], 200);
+    }
+    public function itemOrderReport(Request $request)
+    {
+        $fromDate = $request->from_date;
+        $toDate = $request->to_date;
+        $paymentStatus = $request->payment_status;
+        $orderStatus = $request->order_status;
+        $paymentMethod = $request->payment_method;
+
+        if (!empty($fromDate) && !empty($toDate)) {
+            $orders = UserOrder::when($fromDate, function ($query, $fromDate) {
+                return $query->whereDate('created_at', '>=', Carbon::parse($fromDate));
+            })->when($toDate, function ($query, $toDate) {
+                return $query->whereDate('created_at', '<=', Carbon::parse($toDate));
+            })->when($paymentMethod, function ($query, $paymentMethod) {
+                return $query->where('method', $paymentMethod);
+            })->when($paymentStatus, function ($query, $paymentStatus) {
+                return $query->where('payment_status', $paymentStatus);
+            })->when($orderStatus, function ($query, $orderStatus) {
+                return $query->where('order_status', $orderStatus);
+            })->select('order_number', 'billing_fname', 'billing_email', 'billing_number', 'billing_city', 'billing_country', 'shpping_fname', 'shpping_email', 'shpping_number', 'shpping_city', 'shpping_country', 'method', 'shipping_method', 'cart_total', 'discount', 'tax', 'shipping_charge', 'total', 'created_at', 'payment_status', 'order_status')
+                ->orderBy('id', 'DESC');
+
+            $data['orders'] = $orders->paginate(10);
+        } else {
+            $data['orders'] = [];
+        }
+
+        $data['onPms'] = UserPaymentGeteway::where('status', 1)->get();
+        $data['offPms'] = UserOfflineGateway::where('item_checkout_status', 1)->get();
+
+
+        return response()->json([$data], 200);
+    }
 }

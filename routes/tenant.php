@@ -528,8 +528,6 @@ Route::domain($domain)->group(function () {
 // =============================================
 Route::group(['prefix' => 'pentaforce'], function () {
 
-    Route::post('/process-file', 'Pentaforce\DashboardApiController@processFile');
-
     //dashboard
     Route::group(['prefix' => 'dashboard'], function () {
         Route::get('/{user}', 'Pentaforce\DashboardApiController@getDashboardData');
@@ -547,7 +545,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::post('/menu-insert/{user}', 'Pentaforce\MenuBuilderApiController@MenuInsert');
     });
 
-    //MenuBuilder
+    //shop
     Route::group(['prefix' => 'shop'], function () {
         Route::get('/settings/{user}', 'Pentaforce\ShopApiController@settings');
         Route::post('/update-settings/{user}', 'Pentaforce\ShopApiController@updateSettings');
@@ -569,20 +567,53 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Manage Items
         ===========================
         */
-
         // Category
         Route::get('/item-category/{user}', 'Pentaforce\ShopApiController@itemCategory');
         Route::post('/item-category-add/{user}', 'Pentaforce\ShopApiController@itemCategoryAdd');
         Route::post('/item-category-update/{user}', 'Pentaforce\ShopApiController@itemCategoryUpdate');
-        Route::post('/item-category-delete/{user}', 'Pentaforce\ShopApiController@itemCategoryDelete');
+        Route::delete('/item-category-delete/{user}', 'Pentaforce\ShopApiController@itemCategoryDelete');
         Route::post('/item-category-feature/{user}', 'Pentaforce\ShopApiController@itemCategoryFeature');
 
         // Subcategory
         Route::get('/item-subcategory/{user}', 'Pentaforce\ShopApiController@itemSubcategory');
         Route::post('/item-subcategory-add/{user}', 'Pentaforce\ShopApiController@itemSubcategoryAdd');
         Route::post('/item-subcategory-update/{user}', 'Pentaforce\ShopApiController@itemSubcategoryUpdate');
-        Route::post('/item-subcategory-delete/{user}', 'Pentaforce\ShopApiController@itemSubcategoryDelete');
+        Route::delete('/item-subcategory-delete/{user}', 'Pentaforce\ShopApiController@itemSubcategoryDelete');
 
+        // Add Item - DIGITAL PRODUCT
+        Route::get('/item-product/{user}', 'Pentaforce\ShopApiController@itemDigitalProduct');
+        Route::post('/item-product-add/{user}', 'Pentaforce\ShopApiController@itemDigitalProductAdd');
+        Route::put('/item-product-update/{user}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
+        Route::delete('/item-product-delete/{user}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
+
+
+        /*
+        ===========================
+        ALL Orders
+        ===========================
+        */
+        Route::get('/item-order-details/{id}', 'Pentaforce\ShopApiController@itemOrderDetails');
+        Route::get('/item-order-status/{user}', 'Pentaforce\ShopApiController@itemOrderStatus');
+        Route::get('/item-order-payment-status/{user}', 'Pentaforce\ShopApiController@itemOrderPaymentStatus');
+        Route::get('/item-order-delete/{user}', 'Pentaforce\ShopApiController@itemOrderDelete');
+
+        // all Orders
+        Route::get('/item-order-all/{user}', 'Pentaforce\ShopApiController@itemOrderAll');
+
+        // pending Orders
+        Route::get('/item-order-pending/{user}', 'Pentaforce\ShopApiController@itemOrderPending');
+
+        // processing Orders
+        Route::get('/item-order-processing/{user}', 'Pentaforce\ShopApiController@itemOrderProcessing');
+
+        // completed Orders
+        Route::get('/item-order-completed/{user}', 'Pentaforce\ShopApiController@itemOrderCompleted');
+
+        // rejected Orders
+        Route::get('/item-order-rejected/{user}', 'Pentaforce\ShopApiController@itemOrderRejected');
+
+        // report Orders
+        Route::get('/item-order-report', 'Pentaforce\ShopApiController@itemOrderReport');
     });
 
 });

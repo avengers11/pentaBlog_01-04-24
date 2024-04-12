@@ -29,6 +29,6 @@ class ProfileApiController extends Controller
         }
         $data = $user;
         $data->update($input);
-        return response()->json([$input]);
+        return response()->json(['success' => 'You are successfully update your profile!'], 200);
     }
 }
