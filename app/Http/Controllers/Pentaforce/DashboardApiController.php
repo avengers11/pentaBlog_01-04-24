@@ -14,6 +14,7 @@ use App\Models\User\Follower;
 use App\Models\User\Language;
 use App\Models\User\Post;
 use Carbon\Carbon;
+use Crypt;
 use Session;
 
 class DashboardApiController extends Controller
@@ -126,5 +127,12 @@ class DashboardApiController extends Controller
         $file->move(public_path($file_path), $name);
 
         return $name;
+    }
+
+    // Test
+    public function Test($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        return $user;
     }
 }

@@ -530,37 +530,38 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
     //dashboard
     Route::group(['prefix' => 'dashboard'], function () {
-        Route::get('/{user}', 'Pentaforce\DashboardApiController@getDashboardData');
+        Route::get('/{crypt}', 'Pentaforce\DashboardApiController@getDashboardData');
+        Route::get('test/{crypt}', 'Pentaforce\DashboardApiController@Test');
     });
 
     //profile
     Route::group(['prefix' => 'profile'], function () {
-        Route::get('/{user}', 'Pentaforce\ProfileApiController@getProfileData');
-        Route::post('/update/{user}', 'Pentaforce\ProfileApiController@profileUpdate');
+        Route::get('/{crypt}', 'Pentaforce\ProfileApiController@getProfileData');
+        Route::post('/update/{crypt}', 'Pentaforce\ProfileApiController@profileUpdate');
     });
 
     //MenuBuilder
     Route::group(['prefix' => 'menu-builder'], function () {
-        Route::post('/show/{user}', 'Pentaforce\MenuBuilderApiController@MenuShow');
-        Route::post('/menu-insert/{user}', 'Pentaforce\MenuBuilderApiController@MenuInsert');
+        Route::post('/show/{crypt}', 'Pentaforce\MenuBuilderApiController@MenuShow');
+        Route::post('/menu-insert/{crypt}', 'Pentaforce\MenuBuilderApiController@MenuInsert');
     });
 
     //shop
     Route::group(['prefix' => 'shop'], function () {
-        Route::get('/settings/{user}', 'Pentaforce\ShopApiController@settings');
-        Route::post('/update-settings/{user}', 'Pentaforce\ShopApiController@updateSettings');
+        Route::get('/settings/{crypt}', 'Pentaforce\ShopApiController@settings');
+        Route::post('/update-settings/{crypt}', 'Pentaforce\ShopApiController@updateSettings');
 
         // charge
-        Route::get('/charge/{user}', 'Pentaforce\ShopApiController@charge');
-        Route::post('/delete-charge/{user}', 'Pentaforce\ShopApiController@deleteCharge');
-        Route::post('/add-charge/{user}', 'Pentaforce\ShopApiController@addCharge');
-        Route::post('/update-charge/{user}', 'Pentaforce\ShopApiController@updateCharge');
+        Route::get('/charge/{crypt}', 'Pentaforce\ShopApiController@charge');
+        Route::post('/delete-charge/{crypt}', 'Pentaforce\ShopApiController@deleteCharge');
+        Route::post('/add-charge/{crypt}', 'Pentaforce\ShopApiController@addCharge');
+        Route::post('/update-charge/{crypt}', 'Pentaforce\ShopApiController@updateCharge');
 
         // coupon
-        Route::get('/coupon/{user}', 'Pentaforce\ShopApiController@coupon');
-        Route::post('/delete-coupon/{user}', 'Pentaforce\ShopApiController@deleteCoupon');
-        Route::post('/add-coupon/{user}', 'Pentaforce\ShopApiController@addCoupon');
-        Route::post('/update-coupon/{user}', 'Pentaforce\ShopApiController@updateCoupon');
+        Route::get('/coupon/{crypt}', 'Pentaforce\ShopApiController@coupon');
+        Route::post('/delete-coupon/{crypt}', 'Pentaforce\ShopApiController@deleteCoupon');
+        Route::post('/add-coupon/{crypt}', 'Pentaforce\ShopApiController@addCoupon');
+        Route::post('/update-coupon/{crypt}', 'Pentaforce\ShopApiController@updateCoupon');
 
         /*
         ===========================
@@ -568,23 +569,23 @@ Route::group(['prefix' => 'pentaforce'], function () {
         ===========================
         */
         // Category
-        Route::get('/item-category/{user}', 'Pentaforce\ShopApiController@itemCategory');
-        Route::post('/item-category-add/{user}', 'Pentaforce\ShopApiController@itemCategoryAdd');
-        Route::post('/item-category-update/{user}', 'Pentaforce\ShopApiController@itemCategoryUpdate');
-        Route::delete('/item-category-delete/{user}', 'Pentaforce\ShopApiController@itemCategoryDelete');
-        Route::post('/item-category-feature/{user}', 'Pentaforce\ShopApiController@itemCategoryFeature');
+        Route::get('/item-category/{crypt}', 'Pentaforce\ShopApiController@itemCategory');
+        Route::post('/item-category-add/{crypt}', 'Pentaforce\ShopApiController@itemCategoryAdd');
+        Route::post('/item-category-update/{crypt}', 'Pentaforce\ShopApiController@itemCategoryUpdate');
+        Route::delete('/item-category-delete/{crypt}', 'Pentaforce\ShopApiController@itemCategoryDelete');
+        Route::post('/item-category-feature/{crypt}', 'Pentaforce\ShopApiController@itemCategoryFeature');
 
         // Subcategory
-        Route::get('/item-subcategory/{user}', 'Pentaforce\ShopApiController@itemSubcategory');
-        Route::post('/item-subcategory-add/{user}', 'Pentaforce\ShopApiController@itemSubcategoryAdd');
-        Route::post('/item-subcategory-update/{user}', 'Pentaforce\ShopApiController@itemSubcategoryUpdate');
-        Route::delete('/item-subcategory-delete/{user}', 'Pentaforce\ShopApiController@itemSubcategoryDelete');
+        Route::get('/item-subcategory/{crypt}', 'Pentaforce\ShopApiController@itemSubcategory');
+        Route::post('/item-subcategory-add/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryAdd');
+        Route::post('/item-subcategory-update/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryUpdate');
+        Route::delete('/item-subcategory-delete/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryDelete');
 
         // Add Item - DIGITAL PRODUCT
-        Route::get('/item-product/{user}', 'Pentaforce\ShopApiController@itemDigitalProduct');
-        Route::post('/item-product-add/{user}', 'Pentaforce\ShopApiController@itemDigitalProductAdd');
-        Route::put('/item-product-update/{user}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
-        Route::delete('/item-product-delete/{user}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
+        Route::get('/item-product/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProduct');
+        Route::post('/item-product-add/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductAdd');
+        Route::put('/item-product-update/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
+        Route::delete('/item-product-delete/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
 
 
         /*
@@ -593,24 +594,24 @@ Route::group(['prefix' => 'pentaforce'], function () {
         ===========================
         */
         Route::get('/item-order-details/{id}', 'Pentaforce\ShopApiController@itemOrderDetails');
-        Route::get('/item-order-status/{user}', 'Pentaforce\ShopApiController@itemOrderStatus');
-        Route::get('/item-order-payment-status/{user}', 'Pentaforce\ShopApiController@itemOrderPaymentStatus');
-        Route::get('/item-order-delete/{user}', 'Pentaforce\ShopApiController@itemOrderDelete');
+        Route::get('/item-order-status/{crypt}', 'Pentaforce\ShopApiController@itemOrderStatus');
+        Route::get('/item-order-payment-status/{crypt}', 'Pentaforce\ShopApiController@itemOrderPaymentStatus');
+        Route::get('/item-order-delete/{crypt}', 'Pentaforce\ShopApiController@itemOrderDelete');
 
         // all Orders
-        Route::get('/item-order-all/{user}', 'Pentaforce\ShopApiController@itemOrderAll');
+        Route::get('/item-order-all/{crypt}', 'Pentaforce\ShopApiController@itemOrderAll');
 
         // pending Orders
-        Route::get('/item-order-pending/{user}', 'Pentaforce\ShopApiController@itemOrderPending');
+        Route::get('/item-order-pending/{crypt}', 'Pentaforce\ShopApiController@itemOrderPending');
 
         // processing Orders
-        Route::get('/item-order-processing/{user}', 'Pentaforce\ShopApiController@itemOrderProcessing');
+        Route::get('/item-order-processing/{crypt}', 'Pentaforce\ShopApiController@itemOrderProcessing');
 
         // completed Orders
-        Route::get('/item-order-completed/{user}', 'Pentaforce\ShopApiController@itemOrderCompleted');
+        Route::get('/item-order-completed/{crypt}', 'Pentaforce\ShopApiController@itemOrderCompleted');
 
         // rejected Orders
-        Route::get('/item-order-rejected/{user}', 'Pentaforce\ShopApiController@itemOrderRejected');
+        Route::get('/item-order-rejected/{crypt}', 'Pentaforce\ShopApiController@itemOrderRejected');
 
         // report Orders
         Route::get('/item-order-report', 'Pentaforce\ShopApiController@itemOrderReport');

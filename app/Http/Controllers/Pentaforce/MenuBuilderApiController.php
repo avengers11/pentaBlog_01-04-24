@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\Pentaforce;
 
-use App\Models\User\Menu;
 use App\Models\User;
+use App\Models\User\Menu;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Crypt;
 
 class MenuBuilderApiController extends Controller
 {
     // MenuShow
-    public function MenuShow(Request $request, User $user)
+    public function MenuShow(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $menu = Menu::query()->where('language_id', $request->language_id)
         ->where('user_id', $user->id)
         ->first();
@@ -20,8 +23,10 @@ class MenuBuilderApiController extends Controller
     }
 
     // MenuInsert
-    public function MenuInsert(Request $request, User $user)
+    public function MenuInsert(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         Menu::query()->where('language_id', $request->language_id)
         ->where('user_id', $user->id)
         ->delete();

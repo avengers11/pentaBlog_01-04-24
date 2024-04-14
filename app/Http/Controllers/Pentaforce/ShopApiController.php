@@ -5,45 +5,49 @@ namespace App\Http\Controllers\Pentaforce;
 use Exception;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Customer;
 use Illuminate\Http\Request;
+use App\Models\BasicExtended;
 use App\Models\User\Language;
 use App\Models\User\UserItem;
 use App\Models\User\UserOrder;
 use App\Models\User\UserCoupon;
 use App\Models\User\UserItemImage;
 use Illuminate\Support\Facades\DB;
+use PHPMailer\PHPMailer\PHPMailer;
 use Mews\Purifier\Facades\Purifier;
 use App\Http\Controllers\Controller;
 use App\Models\User\UserItemContent;
 use App\Models\User\UserShopSetting;
 use App\Models\User\UserItemCategory;
+use Illuminate\Support\Facades\Crypt;
 use App\Models\User\UserOfflineGateway;
 use App\Models\User\UserPaymentGeteway;
 use App\Models\User\UserShippingCharge;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User\UserItemSubCategory;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Customer;
-use App\Models\BasicExtended;
-use PHPMailer\PHPMailer\PHPMailer;
 
 class ShopApiController extends Controller
 {
     //settings
-    public function settings(User $user)
+    public function settings($crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $data = UserShopSetting::where('user_id', $user->id)->first();
         return response()->json($data);
     }
 
     //updateSettings
-    public function updateSettings(Request $request, User $user)
+    public function updateSettings(Request $request, $crypt)
     {
         $validator = Validator::make($request->all(), [
             'is_shop' => 'required',
             'tax' => 'required',
             'item_rating_system' => 'required',
         ]);
+
+        $user = User::find(Crypt::decrypt($crypt));
 
         // If validation fails, return error response
         if ($validator->fails()) {
@@ -69,8 +73,9 @@ class ShopApiController extends Controller
     charge
     =================================
     */
-    public function charge(Request $request, User $user)
+    public function charge(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $lang = Language::where('code', $request->language)->first();
         $lang_id = $lang->id;
         $data['shippings'] = UserShippingCharge::where('user_id', $user->id)
@@ -81,13 +86,15 @@ class ShopApiController extends Controller
 
         return response()->json($data);
     }
-    public function deleteCharge(Request $request, User $user)
+    public function deleteCharge(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $data = UserShippingCharge::where('id', $request->shipping_id)->where('user_id', $user->id)->first();
         $data->delete();
         return response()->json(['success' => 'Shipping charge delete successfully!'], 200);
     }
-    public function addCharge(Request $request, User $user)
+    public function addCharge(Request $request, $crypt)
     {
         $validator = Validator::make($request->all(), [
             'user_language_id' => 'required',
@@ -97,6 +104,8 @@ class ShopApiController extends Controller
         ], [
             'user_language_id.required' => 'Language is required!.',
         ]);
+
+        $user = User::find(Crypt::decrypt($crypt));
 
         // If validation fails, return error response
         if ($validator->fails()) {
@@ -114,13 +123,15 @@ class ShopApiController extends Controller
 
         return response()->json(['success' => 'Shipping Charge added successfully!'], 200);
     }
-    public function updateCharge(Request $request, User $user)
+    public function updateCharge(Request $request, $crypt)
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'text' => 'required|max:255',
             'charge' => 'required',
         ]);
+
+        $user = User::find(Crypt::decrypt($crypt));
 
         // If validation fails, return error response
         if ($validator->fails()) {
@@ -140,20 +151,22 @@ class ShopApiController extends Controller
     coupon
     =================================
     */
-    public function coupon(User $user)
+    public function coupon($crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $data = UserCoupon::where('user_id', $user->id)->orderBy('id', 'DESC')->get();
 
         return response()->json($data);
     }
-    public function deleteCoupon(Request $request, User $user)
+    public function deleteCoupon(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $data = UserCoupon::where('id', $request->coupon_id)->where('user_id', $user->id)->first();
         $data->delete();
 
         return response()->json(['success' => 'Coupon deleted successfully!'], 200);
     }
-    public function addCoupon(Request $request, User $user)
+    public function addCoupon(Request $request, $crypt)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
@@ -164,6 +177,7 @@ class ShopApiController extends Controller
             'start_date' => 'required',
             'end_date' => 'required',
         ]);
+        $user = User::find(Crypt::decrypt($crypt));
 
         // If validation fails, return error response
         if ($validator->fails()) {
@@ -183,7 +197,7 @@ class ShopApiController extends Controller
 
         return response()->json(['success' => 'Coupon added successfully!'], 200);
     }
-    public function updateCoupon(Request $request, User $user)
+    public function updateCoupon(Request $request, $crypt)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
@@ -194,6 +208,8 @@ class ShopApiController extends Controller
             'start_date' => 'required',
             'end_date' => 'required',
         ]);
+        $user = User::find(Crypt::decrypt($crypt));
+
         // If validation fails, return error response
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
@@ -790,7 +806,7 @@ class ShopApiController extends Controller
         $order = UserOrder::where('id', $request->order_id)->where('user_id', $user->id)->first();
         // @unlink(public_path('assets/front/invoices/' . $order->invoice_number));
         // @unlink(public_path('assets/front/receipt/' . $order->receipt));
-        
+
         if(count($order->orderitems) > 0){
             foreach ($order->orderitems as $item) {
                 $item->delete();
