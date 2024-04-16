@@ -617,6 +617,18 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::get('/item-order-report', 'Pentaforce\ShopApiController@itemOrderReport');
     });
 
+    /*
+    ===========================
+    Basic Settings
+    ===========================
+    */
+    Route::group(['prefix' => 'basic-settings'], function () {
+
+        // theme
+        Route::get('/theme-show/{crypt}', 'Pentaforce\BasicSettingsController@themeShow');
+        Route::post('/theme-update/{crypt}', 'Pentaforce\BasicSettingsController@themeUpdate');
+    });
+
 });
 
 // php artisan make:controller Pentaforce/ShopApiController
