@@ -236,11 +236,9 @@ class ShopApiController extends Controller
     */
 
     // itemCategory
-    public function itemCategory(Request $request, User $user)
+    public function itemCategory(Request $request, $crypt)
     {
-        // {
-        //     "language" : "en"
-        // }
+        $user = User::find(Crypt::decrypt($crypt));
         $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
         $lang_id = $lang->id;
         $data['itemcategories'] = UserItemCategory::where('language_id', $lang_id)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
@@ -248,14 +246,10 @@ class ShopApiController extends Controller
 
         return response()->json($data);
     }
-    public function itemCategoryAdd(Request $request, User $user)
+    public function itemCategoryAdd(Request $request, $crypt)
     {
-        // {
-        //     "user_language_id" : 162,
-        //     "name" : "Name",
-        //     "status" : 1,
-        //     "image" : "img-txt"
-        // }
+        $user = User::find(Crypt::decrypt($crypt));
+
         $validator = Validator::make($request->all(), [
             'user_language_id' => 'required',
             'name' => 'required|max:255',
@@ -281,15 +275,10 @@ class ShopApiController extends Controller
 
         return response()->json(['success' => 'Category successfully created!'], 200);
     }
-    public function itemCategoryUpdate(Request $request, User $user)
+    public function itemCategoryUpdate(Request $request, $crypt)
     {
-        // {
-        //     "user_language_id" : 162,
-        //     "name" : "Name",
-        //     "status" : 1,
-        //     "image" : "img-txt",
-        //     "category_id" : 81,
-        // }
+        $user = User::find(Crypt::decrypt($crypt));
+
         $validator = Validator::make($request->all(), [
             'user_language_id' => 'required',
             'name' => 'required|max:255',
@@ -314,15 +303,17 @@ class ShopApiController extends Controller
         $data->update($input);
         return response()->json(['success' => 'Category successfully updated!'], 200);
     }
-    public function itemCategoryDelete(Request $request, User $user)
+    public function itemCategoryDelete(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $category = UserItemCategory::where('id', $request->category_id)->where('user_id', $user->id)->first();
         if ($category->items()->count() > 0) {
             return response()->json(['success' => 'First, delete all the item under the selected categories!'], 200);
         }
 
         if ($category->image != null) {
-            Storage::delete($category->image);
+            // Storage::delete($category->image);
         }
 
         $category->delete();
@@ -330,8 +321,9 @@ class ShopApiController extends Controller
 
         return response()->json(['success' => 'Category successfully deleted!'], 200);
     }
-    public function itemCategoryFeature(Request $request, User $user)
+    public function itemCategoryFeature(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $category = UserItemCategory::where('id', $request->category_id)->where('user_id', $user->id)->first();
         $category->is_feature = $request->is_feature;
         $category->save();

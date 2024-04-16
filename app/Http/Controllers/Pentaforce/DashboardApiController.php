@@ -16,13 +16,15 @@ use App\Models\User\Post;
 use Carbon\Carbon;
 use Crypt;
 use Session;
+use App\Models\User\BasicSetting;
 
 class DashboardApiController extends Controller
 {
 
     // getDashboardData
-    public function getDashboardData(User $user)
+    public function getDashboardData($crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $data['user'] = $user;
         $langId = Language::where('user_id', $user->id)->where('is_default', 1)->firstOrFail()->id;
         $data['followers'] = Follower::where('following_id', $user->id)->count();
@@ -82,6 +84,9 @@ class DashboardApiController extends Controller
         $data['faq_count'] = $user->faq->where('language_id', $langId)->count();
         $data['language_count'] = $user->languages->count();
         $data['advertisement_count'] = $user->advertisements->count();
+        $data['theme'] = BasicSetting::where('user_id', $user->id)
+        ->select('theme_version')
+        ->first();
 
         return $data;
     }
