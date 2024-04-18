@@ -337,8 +337,10 @@ class ShopApiController extends Controller
 
 
     // itemSubcategory
-    public function itemSubcategory(Request $request, User $user)
+    public function itemSubcategory(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
         $lang_id = $lang->id;
         $data['categories'] = UserItemCategory::where('language_id', $lang_id)->where('user_id', $user->id)->orderBy('name', 'ASC')->get();
@@ -349,8 +351,10 @@ class ShopApiController extends Controller
 
         return response()->json($data);
     }
-    public function itemSubcategoryAdd(Request $request, User $user)
+    public function itemSubcategoryAdd(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $validator = Validator::make($request->all(), [
             'user_language_id' => 'required',
             'name' => 'required|max:255',
@@ -377,14 +381,18 @@ class ShopApiController extends Controller
 
         return response()->json(['success' => 'Sub Category added successfully!'], 200);
     }
-    public function itemSubcategoryUpdate(Request $request, User $user)
+    public function itemSubcategoryUpdate(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'category_id' => 'required',
+            'user_language_id' => 'required',
             'status' => 'required',
         ], [
-            'category_id.required' => 'The category field is required'
+            'category_id.required' => 'The category field is required',
+            'user_language_id.required' => 'The language field is required'
         ]);
 
         // If validation fails, return error response
@@ -401,15 +409,16 @@ class ShopApiController extends Controller
 
         return response()->json(['success' => 'Sub Category added successfully!'], 200);
     }
-    public function itemSubcategoryDelete(Request $request, User $user)
+    public function itemSubcategoryDelete(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $category = UserItemSubCategory::where('id', $request->subcategory_id)->where('user_id', $user->id)->first();
         if ($category->items()->count() > 0) {
-            return response()->json(['error', 'First, delete all the item under the selected categories!'], 200);
+            return response()->json(['error' => 'First, delete all the item under the selected categories!'], 200);
         }
         $category->delete();
 
-        return response()->json(['success', 'Sub Category deleted successfully!'], 200);
+        return response()->json(['success' => 'Sub Category deleted successfully!'], 200);
     }
 
 
@@ -512,8 +521,10 @@ class ShopApiController extends Controller
 
         return response()->json(['success', 'Item added successfully!'], 200);
     }
-    public function itemDigitalProduct(Request $request, User $user)
+    public function itemDigitalProduct(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
         $lang_id = $lang->id;
         $data['items'] = DB::table('user_items')->where('user_items.user_id', $user->id)
@@ -634,9 +645,12 @@ class ShopApiController extends Controller
 
         return response()->json(['success', 'Item update successfully!'], 200);
     }
-    public function itemDigitalProductDelete(Request $request, User $user)
+    public function itemDigitalProductDelete(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $item = UserItem::where('id', $request->item_id)->where('user_id', $user->id)->first();
+
         Storage::url($item->thumbnail);
 
         foreach ($item->sliders as $key => $image) {
@@ -660,7 +674,7 @@ class ShopApiController extends Controller
         $item->wishlist()->delete();
         $item->itemContents()->delete();
         $item->delete();
-        return response()->json(['success', 'Item deleted successfully!'], 200);
+        return response()->json(['success' => 'Item deleted successfully!'], 200);
     }
 
 

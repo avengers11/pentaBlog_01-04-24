@@ -10,7 +10,10 @@ class UserItem extends Model
     use HasFactory;
     protected $guarded = [];
     protected $table = 'user_items';
-    
+    protected $fillable = [
+        'thumbnail'
+    ];
+
     public function itemContents()
     {
         return $this->hasMany(UserItemContent::class, 'item_id', 'id');

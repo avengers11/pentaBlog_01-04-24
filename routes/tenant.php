@@ -579,13 +579,13 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::get('/item-subcategory/{crypt}', 'Pentaforce\ShopApiController@itemSubcategory');
         Route::post('/item-subcategory-add/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryAdd');
         Route::post('/item-subcategory-update/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryUpdate');
-        Route::delete('/item-subcategory-delete/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryDelete');
+        Route::post('/item-subcategory-delete/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryDelete');
 
         // Add Item - DIGITAL PRODUCT
         Route::get('/item-product/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProduct');
         Route::post('/item-product-add/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductAdd');
-        Route::put('/item-product-update/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
-        Route::delete('/item-product-delete/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
+        Route::post('/item-product-update/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
+        Route::post('/item-product-delete/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
 
 
         /*
