@@ -426,9 +426,12 @@ class ShopApiController extends Controller
     Add Item - DIGITAL PRODUCT
     ==========================
     */
-    public function itemDigitalProductAdd(Request $request, User $user)
+    public function itemDigitalProductAdd(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $languages = Language::where('user_id', $user->id)->get();
+
         $messages = [];
         $rules = [];
         $allowedExtensions = array('jpg', 'jpeg', 'png', 'svg');
@@ -519,7 +522,11 @@ class ShopApiController extends Controller
             $adContent->save();
         }
 
-        return response()->json(['success', 'Item added successfully!'], 200);
+        return response()->json(['success' => 'Item added successfully!'], 200);
+    }
+    public function itemDigitalProductsubCategroy($id)
+    {
+        return UserItemSubCategory::where('category_id', $id)->orderBy('name', 'ASC')->get();
     }
     public function itemDigitalProduct(Request $request, $crypt)
     {
@@ -539,8 +546,22 @@ class ShopApiController extends Controller
 
         return response()->json($data);
     }
-    public function itemDigitalProductUpdate(Request $request, User $user)
+    public function itemDigitalProductSingleShow(Request $request)
     {
+        $data['items'] = DB::table('user_items')
+            ->Join('user_item_contents', 'user_items.id', '=', 'user_item_contents.item_id')
+            ->join('user_item_categories', 'user_item_contents.category_id', '=', 'user_item_categories.id')
+            ->select('user_items.*', 'user_items.id AS item_id', 'user_item_contents.*', 'user_item_categories.name AS category')
+            ->where('user_items.id', $request->products_id)
+            ->orderBy('user_items.id', 'DESC')
+            ->first();
+
+        return response()->json($data);
+    }
+    public function itemDigitalProductUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $languages = Language::where('user_id', $user->id)->get();
         $messages = [];
         $rules = [];
@@ -600,7 +621,10 @@ class ShopApiController extends Controller
         $item->user_id = $user->id;
         $item->stock = $request->stock;
         $item->sku = $request->sku;
-        $item->thumbnail = $thumbnailImgName;
+        if($request->thumbnail != null){
+            Storage::delete($item->thumbnail);
+            $item->thumbnail = $thumbnailImgName;
+        }
         $item->status = $request->status;
         $item->current_price = $request->current_price;
         $item->previous_price = $request->previous_price ?? 0.00;
@@ -643,7 +667,7 @@ class ShopApiController extends Controller
             $adContent->save();
         }
 
-        return response()->json(['success', 'Item update successfully!'], 200);
+        return response()->json(['success' => 'Item update successfully!'], 200);
     }
     public function itemDigitalProductDelete(Request $request, $crypt)
     {
@@ -687,8 +711,9 @@ class ShopApiController extends Controller
         $order = UserOrder::findOrFail($id);
         return response()->json([$order], 200);
     }
-    public function itemOrderStatus(Request $request, User $user)
+    public function itemOrderStatus(Request $request, $crypt)
     {
+        // $user = User::find(Crypt::decrypt($crypt));
 
         $po = UserOrder::find($request->order_id);
 
@@ -746,7 +771,7 @@ class ShopApiController extends Controller
         }
 
 
-        return response()->json(['success', 'Order status changed successfully!'], 200);
+        return response()->json(['success' => 'Order status changed successfully!'], 200);
     }
     public function itemOrderPaymentStatus(Request $request, User $user)
     {
@@ -807,9 +832,12 @@ class ShopApiController extends Controller
 
         return response()->json(['success', 'Payment status changed successfully!'], 200);
     }
-    public function itemOrderDelete(Request $request, User $user)
+    public function itemOrderDelete(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $order = UserOrder::where('id', $request->order_id)->where('user_id', $user->id)->first();
+
         // @unlink(public_path('assets/front/invoices/' . $order->invoice_number));
         // @unlink(public_path('assets/front/receipt/' . $order->receipt));
 
@@ -820,56 +848,69 @@ class ShopApiController extends Controller
         }
         $order->delete();
 
-        return response()->json(['success', 'Item order deleted successfully!'], 200);
+        return response()->json(['success' => 'Item order deleted successfully!'], 200);
     }
-    public function itemOrderAll(Request $request, User $user)
+    public function itemOrderAll(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $search = $request->search;
         $data['orders'] =
             UserOrder::when($search, function ($query, $search) {
                 return $query->where('order_number', $search);
             })
+            ->where('user_id', $user->id)
             ->orderBy('id', 'DESC')->get();
 
         return response()->json([$data], 200);
     }
-    public function itemOrderPending(Request $request, User $user)
+    public function itemOrderPending(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $search = $request->search;
         $data['orders'] = UserOrder::when($search, function ($query, $search) {
             return $query->where('order_number', $search);
         })
-            ->where('order_status', 'pending')->orderBy('id', 'DESC')->get();
+        ->where('user_id', $user->id)
+        ->where('order_status', 'pending')->orderBy('id', 'DESC')->get();
 
         return response()->json([$data], 200);
     }
-    public function itemOrderProcessing(Request $request, User $user)
+    public function itemOrderProcessing(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $search = $request->search;
+
         $data['orders'] = UserOrder::when($search, function ($query, $search) {
             return $query->where('order_number', $search);
         })
-            ->where('order_status', 'processing')->orderBy('id', 'DESC')->get();
+        ->where('user_id', $user->id)
+        ->where('order_status', 'processing')->orderBy('id', 'DESC')->get();
 
         return response()->json([$data], 200);
     }
-    public function itemOrderCompleted(Request $request, User $user)
+    public function itemOrderCompleted(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $search = $request->search;
         $data['orders'] = UserOrder::when($search, function ($query, $search) {
             return $query->where('order_number', $search);
         })
-            ->where('order_status', 'completed')->orderBy('id', 'DESC')->get();
+        ->where('user_id', $user->id)
+        ->where('order_status', 'completed')->orderBy('id', 'DESC')->get();
 
         return response()->json([$data], 200);
     }
-    public function itemOrderRejected(Request $request, User $user)
+    public function itemOrderRejected(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
         $search = $request->search;
         $data['orders'] = UserOrder::when($search, function ($query, $search) {
             return $query->where('order_number', $search);
         })
-            ->where('order_status', 'rejected')->orderBy('id', 'DESC')->get();
+        ->where('user_id', $user->id)
+        ->where('order_status', 'rejected')->orderBy('id', 'DESC')->get();
 
         return response()->json([$data], 200);
     }
@@ -894,7 +935,6 @@ class ShopApiController extends Controller
                 return $query->where('order_status', $orderStatus);
             })->select('order_number', 'billing_fname', 'billing_email', 'billing_number', 'billing_city', 'billing_country', 'shpping_fname', 'shpping_email', 'shpping_number', 'shpping_city', 'shpping_country', 'method', 'shipping_method', 'cart_total', 'discount', 'tax', 'shipping_charge', 'total', 'created_at', 'payment_status', 'order_status')
                 ->orderBy('id', 'DESC');
-
             $data['orders'] = $orders->paginate(10);
         } else {
             $data['orders'] = [];

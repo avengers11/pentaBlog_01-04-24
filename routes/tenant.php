@@ -584,7 +584,9 @@ Route::group(['prefix' => 'pentaforce'], function () {
         // Add Item - DIGITAL PRODUCT
         Route::get('/item-product/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProduct');
         Route::post('/item-product-add/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductAdd');
+        Route::get('/item-product-subCategroy/{id}', 'Pentaforce\ShopApiController@itemDigitalProductsubCategroy');
         Route::post('/item-product-update/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
+        Route::get('/item-product-single-show', 'Pentaforce\ShopApiController@itemDigitalProductSingleShow');
         Route::post('/item-product-delete/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
 
 
@@ -593,10 +595,10 @@ Route::group(['prefix' => 'pentaforce'], function () {
         ALL Orders
         ===========================
         */
-        Route::get('/item-order-details/{id}', 'Pentaforce\ShopApiController@itemOrderDetails');
-        Route::get('/item-order-status/{crypt}', 'Pentaforce\ShopApiController@itemOrderStatus');
-        Route::get('/item-order-payment-status/{crypt}', 'Pentaforce\ShopApiController@itemOrderPaymentStatus');
-        Route::get('/item-order-delete/{crypt}', 'Pentaforce\ShopApiController@itemOrderDelete');
+        Route::post('/item-order-details/{id}', 'Pentaforce\ShopApiController@itemOrderDetails');
+        Route::post('/item-order-status/{crypt}', 'Pentaforce\ShopApiController@itemOrderStatus');
+        Route::post('/item-order-payment-status/{crypt}', 'Pentaforce\ShopApiController@itemOrderPaymentStatus');
+        Route::post('/item-order-delete/{crypt}', 'Pentaforce\ShopApiController@itemOrderDelete');
 
         // all Orders
         Route::get('/item-order-all/{crypt}', 'Pentaforce\ShopApiController@itemOrderAll');
@@ -623,10 +625,29 @@ Route::group(['prefix' => 'pentaforce'], function () {
     ===========================
     */
     Route::group(['prefix' => 'basic-settings'], function () {
+        // Preferences
+        Route::get('/preferences-show/{crypt}', 'Pentaforce\BasicSettingsController@preferencesShow');
+        Route::post('/preferences-update/{crypt}', 'Pentaforce\BasicSettingsController@preferencesUpdate');
 
         // theme
         Route::get('/theme-show/{crypt}', 'Pentaforce\BasicSettingsController@themeShow');
         Route::post('/theme-update/{crypt}', 'Pentaforce\BasicSettingsController@themeUpdate');
+
+        // general
+        Route::get('/general-show/{crypt}', 'Pentaforce\BasicSettingsController@generalShow');
+        Route::post('/general-update/{crypt}', 'Pentaforce\BasicSettingsController@generalUpdate');
+
+        // logo
+        Route::get('/logo-show/{crypt}', 'Pentaforce\BasicSettingsController@logoShow');
+        Route::post('/logo-update/{crypt}', 'Pentaforce\BasicSettingsController@logoUpdate');
+
+        // favicon
+        Route::get('/favicon-show/{crypt}', 'Pentaforce\BasicSettingsController@faviconShow');
+        Route::post('/favicon-update/{crypt}', 'Pentaforce\BasicSettingsController@faviconUpdate');
+
+        // preloader
+        Route::get('/preloader-show/{crypt}', 'Pentaforce\BasicSettingsController@preloaderShow');
+        Route::post('/preloader-update/{crypt}', 'Pentaforce\BasicSettingsController@preloaderUpdate');
     });
 
 });
