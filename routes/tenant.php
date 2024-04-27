@@ -625,29 +625,34 @@ Route::group(['prefix' => 'pentaforce'], function () {
     ===========================
     */
     Route::group(['prefix' => 'basic-settings'], function () {
-        // Preferences
-        Route::get('/preferences-show/{crypt}', 'Pentaforce\BasicSettingsController@preferencesShow');
-        Route::post('/preferences-update/{crypt}', 'Pentaforce\BasicSettingsController@preferencesUpdate');
-
         // theme
         Route::get('/theme-show/{crypt}', 'Pentaforce\BasicSettingsController@themeShow');
         Route::post('/theme-update/{crypt}', 'Pentaforce\BasicSettingsController@themeUpdate');
 
-        // general
+        // General Settings
         Route::get('/general-show/{crypt}', 'Pentaforce\BasicSettingsController@generalShow');
         Route::post('/general-update/{crypt}', 'Pentaforce\BasicSettingsController@generalUpdate');
 
-        // logo
-        Route::get('/logo-show/{crypt}', 'Pentaforce\BasicSettingsController@logoShow');
-        Route::post('/logo-update/{crypt}', 'Pentaforce\BasicSettingsController@logoUpdate');
+        // Website Appearance
+        Route::get('/appearance-show/{crypt}', 'Pentaforce\BasicSettingsController@appearanceShow');
+        Route::post('/appearance-update/{crypt}', 'Pentaforce\BasicSettingsController@appearanceUpdate');
 
-        // favicon
-        Route::get('/favicon-show/{crypt}', 'Pentaforce\BasicSettingsController@faviconShow');
-        Route::post('/favicon-update/{crypt}', 'Pentaforce\BasicSettingsController@faviconUpdate');
+        // Home Sections
+        Route::get('/home-sections/{crypt}', 'Pentaforce\BasicSettingsController@homeSectionsShow');
+        Route::post('/home-sections-update/{crypt}', 'Pentaforce\BasicSettingsController@homeSectionsUpdate');
 
-        // preloader
-        Route::get('/preloader-show/{crypt}', 'Pentaforce\BasicSettingsController@preloaderShow');
-        Route::post('/preloader-update/{crypt}', 'Pentaforce\BasicSettingsController@preloaderUpdate');
+        // Page Headings
+        Route::get('/page-sections/{crypt}', 'Pentaforce\BasicSettingsController@pageSectionsShow');
+        Route::post('/page-sections-update/{crypt}', 'Pentaforce\BasicSettingsController@pageSectionsUpdate');
+
+        // Update SEO Information
+        Route::get('/seo-info/{crypt}', 'Pentaforce\BasicSettingsController@seoInfoShow');
+        Route::post('/seo-info-update/{crypt}', 'Pentaforce\BasicSettingsController@seoInfoUpdate');
+
+        // Plugins
+        Route::get('/plugins/{crypt}', 'Pentaforce\BasicSettingsController@pluginsShow');
+        Route::post('/plugins-update/{crypt}', 'Pentaforce\BasicSettingsController@pluginsUpdate');
+
     });
 
 });

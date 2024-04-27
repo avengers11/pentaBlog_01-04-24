@@ -10,30 +10,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Helpers\UserPermissionHelper;
+use App\Models\User\HomeSection;
+use App\Models\User\Language;
+use App\Models\User\PageHeading;
+use App\Models\User\SEO;
 
 class BasicSettingsController extends Controller
 {
-    /*
-    ===========================
-    Preferences
-    ===========================
-    */
-    public function preferencesShow($crypt)
-    {
-        $user = User::find(Crypt::decrypt($crypt));
-        return response()->json($user);
-    }
-    public function preferencesUpdate(Request $request, $crypt)
-    {
-        $user = User::find(Crypt::decrypt($crypt));
-
-        $user->online_status = $request->online_status;
-        $user->listing_page = $request->listing_page;
-        $user->save();
-
-        return response()->json(['success' => 'Preferences updated successfully!']);
-    }
-
     /*
     ===========================
     Theme
@@ -77,8 +60,9 @@ class BasicSettingsController extends Controller
     public function generalShow($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $data = BasicSetting::where('user_id', $user->id)
-        ->first();
+        $data['basic'] = BasicSetting::where('user_id', $user->id)
+            ->first();
+
         return response()->json($data);
     }
     public function generalUpdate(Request $request, $crypt)
@@ -125,84 +109,264 @@ class BasicSettingsController extends Controller
 
     /*
     ===========================
-    logo
+    Website Appearance
     ===========================
     */
-    public function logoShow($crypt)
+    public function appearanceShow($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $data = BasicSetting::where('user_id', $user->id)
-            ->select('logo')
+        $data['basic'] = BasicSetting::where('user_id', $user->id)
             ->first();
+
         return response()->json($data);
     }
-    public function logoUpdate(Request $request, $crypt)
+    public function appearanceUpdate(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
+        $basic = BasicSetting::where('user_id', $user->id)->first();
 
-        $settings = BasicSetting::where('user_id', $user->id)->first();
-        if ($settings->logo != null) {
-            Storage::delete($settings->logo);
+        // Logo
+        if($request->logo != null){
+            $logo = $request->logo;
+            if ($user->logo != null) {
+                Storage::delete($user->logo);
+            }
+        }else{
+            $logo = $basic->logo;
         }
-        $settings->logo = $request->logo;
-        $settings->save();
 
-        return response()->json(['success' => 'Logo updated successfully!']);
+        // favicon
+        if($request->favicon != null){
+            $favicon = $request->favicon;
+            if ($user->favicon != null) {
+                Storage::delete($user->favicon);
+            }
+        }else{
+            $favicon = $basic->favicon;
+        }
+
+        // preloader
+        if($request->preloader != null){
+            $preloader = $request->preloader;
+            if ($user->preloader != null) {
+                Storage::delete($user->preloader);
+            }
+        }else{
+            $preloader = $basic->preloader;
+        }
+
+        // breadcrumb
+        if($request->breadcrumb != null){
+            $breadcrumb = $request->breadcrumb;
+            if ($user->breadcrumb != null) {
+                Storage::delete($user->breadcrumb);
+            }
+        }else{
+            $breadcrumb = $basic->breadcrumb;
+        }
+
+        BasicSetting::where('user_id', $user->id)->update([
+            'logo' => $logo,
+            'favicon' => $favicon,
+            'preloader' => $preloader,
+            'breadcrumb' => $breadcrumb,
+            'preloader_status' => $request->preloader_status,
+            'cookie_status' => $request->cookie_status,
+            'primary_color' => $request->primary_color,
+            'breadcrumb_overlay_color' => $request->breadcrumb_overlay_color,
+            'breadcrumb_overlay_opacity' => $request->breadcrumb_overlay_opacity,
+        ]);
+
+        return response()->json(['success' => 'Website appearance updated successfully!']);
     }
 
     /*
     ===========================
-    favicon
+    SEO & Headings
     ===========================
     */
-    public function faviconShow($crypt)
+    public function homeSectionsShow($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $data['hs'] = HomeSection::where('user_id', $user->id)->first();
+        $data['websiteInfo'] = BasicSetting::where('user_id', $user->id)->select('theme_version')->first();
+
+        return response()->json($data);
+    }
+    public function homeSectionsUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        HomeSection::where('user_id', $user->id)->update([
+            'slider_posts' => $request->slider_posts,
+            'latest_posts' => $request->latest_posts,
+            'author_info' => $request->author_info,
+            'popular_posts' => $request->popular_posts,
+            'newsletter' => $request->newsletter,
+            'sidebar_ads' => $request->sidebar_ads,
+            'featured_category_posts' => $request->featured_category_posts,
+            'footer' => $request->footer,
+        ]);
+
+        return response()->json(['success' => 'Home sections updated successfully!']);
+    }
+
+    // pageSectionsShow
+    public function pageSectionsShow(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $language = Language::where('code', $request->language)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+        $information['language'] = $language;
+        $information['data'] = PageHeading::where('language_id', $language->id)->where('user_id', $user->id)->first();
+        $information['langs'] = Language::where('user_id', $user->id)->get();
+
+        return response()->json($information);
+    }
+    public function pageSectionsUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        if (!empty($user)) {
+            $permissions = UserPermissionHelper::packagePermission($user->id);
+            $permissions = json_decode($permissions, true);
+        }
+        $language = Language::where('code', $request->language)
+        ->where('user_id', $user->id)
+        ->first();
+
+        $data = [
+            'about_me_title' => $request->about_me_title,
+            'posts_title' => $request->posts_title,
+            'post_details_title' => $request->post_details_title,
+            'contact_me_title' => $request->contact_me_title,
+            'error_page_title' => $request->error_page_title,
+            'shop' => $request->shop,
+            'shop_details' => $request->shop_details,
+            'cart' => $request->cart,
+            'checkout' => $request->checkout,
+            'user_id' => $user->id,
+            'language_id' => $language->id
+        ];
+        if (!empty($permissions) && in_array('Gallery', $permissions)) {
+            $data['gallery_title'] = $request->gallery_title;
+        }
+        if (!empty($permissions) && in_array('FAQ', $permissions)) {
+            $data['faq_title'] = $request->faq_title;
+        }
+
+        PageHeading::updateOrCreate([
+            'user_id' => $user->id,
+            'language_id' => $language->id
+        ], $data);
+
+        return response()->json(['success' => 'Page heading updated successfully!']);
+    }
+
+    // seoInfoShow
+    public function seoInfoShow(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $language = Language::where('code', $request->language)->where('user_id', $user->id)->first();
+        $information['language'] = $language;
+
+        $information['data'] = SEO::where('language_id', $language->id)->where('user_id', $user->id)->first();
+
+        $information['langs'] = Language::where('user_id', $user->id)->get();
+
+        return response()->json($information);
+    }
+    public function seoInfoUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        if (!empty($user)) {
+            $permissions = UserPermissionHelper::packagePermission($user->id);
+            $permissions = json_decode($permissions, true);
+        }
+        $language = Language::where('code', $request->language)
+        ->where('user_id', $user->id)
+        ->first();
+
+        $data = [
+            "meta_keyword_home" => $request->meta_keyword_home,
+            "meta_keyword_about" => $request->meta_keyword_about,
+            "meta_description_home" => $request->meta_description_home,
+            "meta_description_about" => $request->meta_description_about,
+            "meta_keyword_gallery" => $request->meta_keyword_gallery,
+            "meta_keyword_posts" => $request->meta_keyword_posts,
+            "meta_description_gallery" => $request->meta_description_gallery,
+            "meta_description_posts" => $request->meta_description_posts,
+            "meta_keyword_faq" => $request->meta_keyword_faq,
+            "meta_keyword_contact" => $request->meta_keyword_contact,
+            "meta_description_faq" => $request->meta_description_faq,
+            "meta_description_contact" => $request->meta_description_contact,
+            "meta_keyword_login" => $request->meta_keyword_login,
+            "meta_keyword_signup" => $request->meta_keyword_signup,
+            "meta_description_login" => $request->meta_description_login,
+            "meta_description_signup" => $request->meta_description_signup,
+            "meta_keyword_forget_password" => $request->meta_keyword_forget_password,
+            "meta_keyword_shop" => $request->meta_keyword_shop,
+            "meta_description_forget_password" => $request->meta_description_forget_password,
+            "meta_description_shop" => $request->meta_description_shop,
+            "meta_keyword_shop_details" => $request->meta_keyword_shop_details,
+            "meta_description_shop_details" => $request->meta_description_shop_details,
+        ];
+        if (!empty($permissions) && in_array('Gallery', $permissions)) {
+            $data['gallery_title'] = $request->gallery_title;
+        }
+        if (!empty($permissions) && in_array('FAQ', $permissions)) {
+            $data['faq_title'] = $request->faq_title;
+        }
+
+        SEO::updateOrCreate([
+            'user_id' => $user->id,
+            'language_id' => $language->id
+        ], $data);
+
+        return response()->json(['success' => 'Page heading updated successfully!']);
+    }
+
+    // Plugins
+    public function pluginsShow($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
         $data = BasicSetting::where('user_id', $user->id)
-            ->select('favicon')
             ->first();
+
         return response()->json($data);
     }
-    public function faviconUpdate(Request $request, $crypt)
+    public function pluginsUpdate(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $settings = BasicSetting::where('user_id', $user->id)->first();
-        if ($settings->favicon != null) {
-            Storage::delete($settings->favicon);
+        $basic = BasicSetting::where('user_id', $user->id)->first();
+
+        if($request->type == 1){
+            $basic->analytics_status = $request->analytics_status;
+            $basic->measurement_id = $request->measurement_id;
+        }else if($request->type == 2){
+            $basic->is_recaptcha = $request->is_recaptcha;
+            $basic->google_recaptcha_site_key = $request->google_recaptcha_site_key;
+            $basic->google_recaptcha_secret_key = $request->google_recaptcha_secret_key;
+        }else if($request->type == 3){
+            $basic->disqus_status = $request->disqus_status;
+            $basic->disqus_short_name = $request->disqus_short_name;
+        }else if($request->type == 4){
+            $basic->whatsapp_status = $request->whatsapp_status;
+            $basic->whatsapp_number = $request->whatsapp_number;
+            $basic->whatsapp_header_title = $request->whatsapp_header_title;
+            $basic->whatsapp_popup_status = $request->whatsapp_popup_status;
+            $basic->whatsapp_popup_message = $request->whatsapp_popup_message;
+        }else if($request->type == 5){
+            $basic->tawkto_status = $request->tawkto_status;
+            $basic->tawkto_direct_chat_link = $request->tawkto_direct_chat_link;
+        }else{
+
         }
-        $settings->favicon = $request->favicon;
-        $settings->save();
+        $basic->save();
 
-        return response()->json(['success' => 'Logo updated successfully!']);
+        return response()->json(['success' => 'You are successfully update plugins settings!']);
     }
-
-    /*
-    ===========================
-    preloader
-    ===========================
-    */
-    public function preloaderShow($crypt)
-    {
-        $user = User::find(Crypt::decrypt($crypt));
-        $data = BasicSetting::where('user_id', $user->id)
-            ->select('preloader', 'preloader_status')
-            ->first();
-        return response()->json($data);
-    }
-    public function preloaderUpdate(Request $request, $crypt)
-    {
-        $user = User::find(Crypt::decrypt($crypt));
-
-        $settings = BasicSetting::where('user_id', $user->id)->first();
-        if ($request->preloader != null) {
-            // Storage::delete($settings->preloader);
-        }
-        $settings->preloader = $request->preloader != null ? $request->preloader : $settings->preloader;
-        $settings->preloader_status = $request->preloader_status;
-        $settings->save();
-
-        return response()->json(['success' => 'Logo updated successfully!']);
-    }
-
 }
