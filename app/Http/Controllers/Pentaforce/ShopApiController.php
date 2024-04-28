@@ -76,7 +76,7 @@ class ShopApiController extends Controller
     public function charge(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $lang = Language::where('code', $request->language)->first();
+        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
         $lang_id = $lang->id;
         $data['shippings'] = UserShippingCharge::where('user_id', $user->id)
             // ->where('language_id', $lang_id)

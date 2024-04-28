@@ -14,6 +14,8 @@ use App\Models\User\HomeSection;
 use App\Models\User\Language;
 use App\Models\User\PageHeading;
 use App\Models\User\SEO;
+use App\Models\User\FooterText;
+use App\Models\User\FooterQuickLink;
 
 class BasicSettingsController extends Controller
 {
@@ -42,7 +44,9 @@ class BasicSettingsController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator->errors());
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
         }
 
         BasicSetting::where('user_id', $user->id)->update(
@@ -85,8 +89,9 @@ class BasicSettingsController extends Controller
         }
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            $validator->getMessageBag()->add('error', 'true');
-            return response()->json($validator->errors());
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
         }
 
 
@@ -368,5 +373,139 @@ class BasicSettingsController extends Controller
         $basic->save();
 
         return response()->json(['success' => 'You are successfully update plugins settings!']);
+    }
+
+    // footerShow
+    public function footerShow(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        // footer
+        $lang = Language::where([
+            ['code', $request->language],
+            ['user_id', $user->id]
+        ])->first();
+        $data['text'] = FooterText::where('language_id', $lang->id)->where('user_id', $user->id)->first();
+
+        // footer quick links
+        $language = Language::where('code', $request->language)
+                    ->where('user_id', $user->id)
+                    ->firstOrFail();
+        $data['links'] = FooterQuickLink::where('language_id', $language->id)
+                        ->where('user_id', $user->id)
+                        ->orderBy('id', 'desc')
+                        ->get();
+        $data['langs'] = Language::where('user_id', $user->id)->get();
+
+        return response()->json($data);
+    }
+    public function footerTextUpdateShow(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->firstOrFail();
+        $data = FooterText::where('language_id', $lang->id)->where('user_id', $user->id)->first();
+        // $theme = BasicSetting::where('user_id', $user->id)->first()->theme_version;
+
+        if(is_null($data))
+        {
+            $data = new FooterText;
+        }
+        $rules = [
+            'about_company' => 'required',
+            'copyright_text' => 'required'
+        ];
+        $message = [
+            'about_company.required' => 'The about company field is required',
+            'copyright_text.required' => 'The copy right text field is required'
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $message);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        if($request->logo != null){
+            $data->logo =  $request->logo;
+            if ($data->logo != null) {
+                // Storage::delete($data->logo);
+            }
+        }
+
+        $data->language_id =  $lang->id;
+        $data->copyright_text =  clean($request->copyright_text);
+        $data->user_id = $user->id;
+        $data->about_company = $request->about_company;
+        $data->save();
+
+        return response()->json(['success' => 'You are successfully update plugins settings!']);
+    }
+
+    public function footerQuickAddShow(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $rules = [
+            'title' => 'required',
+            'user_language_id' => 'required',
+            'url' => 'required',
+            'serial_number' => 'required'
+        ];
+        $message = [
+            'user_language_id.required' => 'The language field is required.',
+            'title.required' => 'The title field is required',
+            'url.required' => 'The url field is required',
+            'serial_number.required' => 'The serial number field is required',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $message);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        FooterQuickLink::create($request->except('language_id','user_id') + [
+                'language_id' => $request->user_language_id,
+                'user_id' => $user->id,
+            ]);
+
+        return response()->json(['success' => 'You are successfully add quick links settings!']);
+    }
+    public function footerQuickUpdateShow(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $rules = [
+            'title' => 'required',
+            'url' => 'required',
+            'serial_number' => 'required'
+        ];
+        $message = [
+            'title.required' => 'The title field is required',
+            'url.required' => 'The url field is required',
+            'serial_number.required' => 'The serial number field is required',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $message);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        $data = $request->except('link_id');
+        FooterQuickLink::where('id', $request->link_id)->where('user_id', $user->id)->update($data);
+
+        return response()->json(['success' => 'Quick link updated successfully!']);
+    }
+    public function footerQuickDeleteShow(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        FooterQuickLink::where('id', $request->link_id)->where('user_id', $user->id)->delete();
+
+        return response()->json(['success' => 'Quick link deleted successfully!']);
     }
 }

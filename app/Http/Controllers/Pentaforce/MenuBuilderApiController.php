@@ -7,19 +7,28 @@ use App\Models\User\Menu;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Crypt;
+use App\Models\User\Language;
 
 class MenuBuilderApiController extends Controller
 {
     // MenuShow
-    public function MenuShow(Request $request, $crypt)
+    public function MenuShow($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $menu = Menu::query()->where('language_id', $request->language_id)
+        $lang = Language::where('is_default', 1)->where('user_id', $user->id)->first();
+        $menu = Menu::query()->where('language_id', $lang->id)
         ->where('user_id', $user->id)
         ->first();
+        if(!$menu){
+            $menu = new Menu;
+            $menu->language_id = $lang->id;
+            $menu->user_id = $user->id;
+            $menu->menus = json_encode([]);
+            $menu->save();
+        }
 
-        return response()->json(['menu' => json_decode($menu->menus)]);
+        return response()->json(['menu' => json_decode($menu->menus), "lang" => $lang]);
     }
 
     // MenuInsert
@@ -27,7 +36,7 @@ class MenuBuilderApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        Menu::query()->where('language_id', $request->language_id)
+        Menu::where('language_id', $request->language_id)
         ->where('user_id', $user->id)
         ->delete();
 

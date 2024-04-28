@@ -271,8 +271,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>{{ $keywords['Paytm_Merchant_mid'] ?? __('Paytm Merchant mid') }}</label>
-                                    <input class="form-control" name="merchant"
-                                        value="{{ isset($paytmInfo) ? $paytmInfo['merchant'] : '' }}">
+                                    <input class="form-control" >
                                     @if ($errors->has('merchant'))
                                         <p class="mb-0 text-danger">{{ $errors->first('merchant') }}</p>
                                     @endif

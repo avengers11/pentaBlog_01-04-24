@@ -1,4 +1,5 @@
 <?php
+
 $domain = env('WEBSITE_HOST');
 
 if (!app()->runningInConsole()) {
@@ -653,8 +654,26 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::get('/plugins/{crypt}', 'Pentaforce\BasicSettingsController@pluginsShow');
         Route::post('/plugins-update/{crypt}', 'Pentaforce\BasicSettingsController@pluginsUpdate');
 
+        // footer
+        Route::get('/footer/{crypt}', 'Pentaforce\BasicSettingsController@footerShow');
+
+        // text
+        Route::post('/footer-text-update/{crypt}', 'Pentaforce\BasicSettingsController@footerTextUpdateShow');
+
+        // quick links
+        Route::post('/footer-quick-add/{crypt}', 'Pentaforce\BasicSettingsController@footerQuickAddShow');
+        Route::post('/footer-quick-update/{crypt}', 'Pentaforce\BasicSettingsController@footerQuickUpdateShow');
+        Route::post('/footer-quick-delete/{crypt}', 'Pentaforce\BasicSettingsController@footerQuickDeleteShow');
+
+    });
+
+    // post
+    Route::controller(\Pentaforce\PaymentGatewaysApiController::class)->prefix('payment')->group(function () {
+        // Online Gateways
+        Route::get('/online/{crypt}', 'onlineShow')->name('onlineShow');
+        Route::post('/online-update/{crypt}', 'onlineUpdate')->name('onlineUpdate');
     });
 
 });
 
-// php artisan make:controller Pentaforce/ShopApiController
+// php artisan make:controller Pentaforce/PaymentGatewaysApiController
