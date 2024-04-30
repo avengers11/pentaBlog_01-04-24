@@ -134,6 +134,15 @@ class DashboardApiController extends Controller
         return $name;
     }
 
+    // getUserData
+    public function getUserData($crypt)
+    {
+        $data['user'] = User::find(Crypt::decrypt($crypt));
+        $data['basic'] = BasicSetting::where('user_id', $data['user']->id)->first();
+
+        return $data;
+    }
+
     // Test
     public function Test($crypt)
     {

@@ -532,6 +532,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
     //dashboard
     Route::group(['prefix' => 'dashboard'], function () {
         Route::get('/{crypt}', 'Pentaforce\DashboardApiController@getDashboardData');
+        Route::get('user/{crypt}', 'Pentaforce\DashboardApiController@getUserData');
         Route::get('test/{crypt}', 'Pentaforce\DashboardApiController@Test');
     });
 
@@ -667,13 +668,38 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
     });
 
-    // post
+    // payment
     Route::controller(\Pentaforce\PaymentGatewaysApiController::class)->prefix('payment')->group(function () {
         // Online Gateways
         Route::get('/online/{crypt}', 'onlineShow')->name('onlineShow');
         Route::post('/online-update/{crypt}', 'onlineUpdate')->name('onlineUpdate');
+
+        // offline
+        Route::get('/offline/{crypt}', 'offlineShow')->name('offlineShow');
+        Route::post('/offline-add/{crypt}', 'offlineAddShow')->name('offlineAddShow');
+        Route::post('/offline-update/{crypt}', 'offlineUpdateShow')->name('offlineUpdateShow');
+        Route::post('/offline-delete/{crypt}', 'offlineDeleteShow')->name('offlineDeleteShow');
+    });
+
+    // Post
+    Route::controller(\Pentaforce\PostsApiController::class)->prefix('post')->group(function () {
+
+        // setting
+        Route::get('/setting/{crypt}', 'setting')->name('setting');
+        Route::post('/setting-update/{crypt}', 'settingUpdate')->name('settingUpdate');
+
+        // category
+        Route::get('/category/{crypt}', 'category')->name('category');
+        Route::post('/category-add/{crypt}', 'categoryAdd')->name('categoryAdd');
+        Route::post('/category-update/{crypt}', 'categoryUpdate')->name('categoryUpdate');
+        Route::post('/category-delete/{crypt}', 'categoryDelete')->name('categoryDelete');
+
+        // post
+        Route::get('/post/{crypt}', 'post')->name('post');
+        Route::post('/post-delete/{crypt}', 'postDelete')->name('postDelete');
+
     });
 
 });
 
-// php artisan make:controller Pentaforce/PaymentGatewaysApiController
+// php artisan make:controller Pentaforce/PostsApiController
