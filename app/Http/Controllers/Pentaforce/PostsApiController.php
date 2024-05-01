@@ -16,6 +16,7 @@ use App\Http\Helpers\LimitCheckerHelper;
 use App\Http\Helpers\UserPermissionHelper;
 use App\Models\User\Post;
 use App\Models\User\PostContent;
+use Mews\Purifier\Facades\Purifier;
 
 class PostsApiController extends Controller
 {
@@ -59,7 +60,7 @@ class PostsApiController extends Controller
         $information['language'] = $language;
 
         $information['count'] = LimitCheckerHelper::currentPostCategoryCount($user->id, $language->id);//category added count of selected language
-        $information['category_limit'] = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit count of current package
+        $information['category_limit'] = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit
 
         $information['categoryCount'] = PostCategory::where('user_id', $user->id)->count();
         $information['categoryLimit'] = UserPermissionHelper::currentPackagePermission($user->id)->post_categories_limit;
@@ -80,7 +81,7 @@ class PostsApiController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
 
         $count = LimitCheckerHelper::currentPostCategoryCount($user->id, $request->user_language_id);//category added count of selected language
-        $category_limit = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit count of current package
+        $category_limit = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit
         if($count >= $category_limit){
             return response()->json(['success' => 'Post Category Limit Exceeded!'], 200);
         }
@@ -131,7 +132,7 @@ class PostsApiController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
 
         $count = LimitCheckerHelper::currentPostCategoryCount($user->id, $request->user_language_id);//category added count of selected language
-        $category_limit = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit count of current package
+        $category_limit = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit
         if($count >= $category_limit){
             return response()->json(['success' => 'Post Category Limit Exceeded!'], 200);
         }
@@ -203,10 +204,10 @@ class PostsApiController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
 
         $information['count'] = LimitCheckerHelper::currentPostsCount($user->id);//count of posts
-        $information['limit'] = LimitCheckerHelper::postsLimit($user->id);//limit count of current package
+        $information['limit'] = LimitCheckerHelper::postsLimit($user->id);
 
         $information['featuredCount'] = LimitCheckerHelper::currentFeaturedPostsCount($user->id);//count of current featured posts
-        $information['featuredLimit'] = LimitCheckerHelper::featurePostsLimit($user->id);//limit count of current package
+        $information['featuredLimit'] = LimitCheckerHelper::featurePostsLimit($user->id);
 
         $languageId =   Language::where('user_id', $user->id)->pluck('id')->first();;
         $information['posts'] = DB::table('posts')
@@ -221,6 +222,119 @@ class PostsApiController extends Controller
 
         return response()->json($information);
     }
+    public function postAdd(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $count = LimitCheckerHelper::currentPostsCount($user->id);
+
+        $limit = LimitCheckerHelper::postsLimit($user->id);
+        if($count >= $limit){
+            return response()->json(['error' => 'Post Limit Exceeded!'], 200);
+        }
+
+        $rules = [
+            'serial_number' => 'required'
+        ];
+
+        $thumbnailImgURL = $request->thumbnail_image;
+        $sliderImgURLs = $request->has('image') ? $request->image : [];
+
+        $thumbnailImgExt = null;
+
+        $sliderImgExts = [];
+
+        // get all the slider images extension
+        // if (!empty($sliderImgURLs)) {
+        //     foreach ($sliderImgURLs as $sliderImgURL) {
+        //         $n = strrpos($sliderImgURL, ".");
+        //         $extension = ($n === false) ? "" : substr($sliderImgURL, $n + 1);
+        //         array_push($sliderImgExts, $extension);
+        //     }
+        // }
+
+        $languages = Language::where('user_id', $user->id)->get();
+
+        $messages = [];
+
+        foreach ($languages as $language) {
+            $slug = make_slug($request[$language->code . '_title']);
+            $rules[$language->code . '_title'] = [
+                'required',
+                'max:255',
+                function ($attribute, $value, $fail) use ($slug, $language, $user) {
+                    $pcs = PostContent::where('user_id', $user->id)->get();
+                    foreach ($pcs as $key => $pc) {
+                        if (strtolower($slug) == strtolower($pc->slug)) {
+                            $fail('The title field must be unique for ' . $language->name . ' language.');
+                        }
+                    }
+                }
+            ];
+            $rules[$language->code . '_category'] = 'required';
+            $rules[$language->code . '_author'] = 'required';
+            // $rules[$language->code . '_content'] = 'required|min:15';
+
+            $messages[$language->code . '_title.required'] = 'The title field is required for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_category.required'] = 'The category field is required for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_author.required'] = 'The author field is required for ' . $language->name . ' language.';
+
+            // $messages[$language->code . '_content.required'] = 'The content field is required for ' . $language->name . ' language.';
+
+            // $messages[$language->code . '_content.min'] = 'The content field at least have 15 characters for ' . $language->name . ' language.';
+        }
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        $post = new Post();
+        $thumbnailImgName = time() . '.' . $thumbnailImgExt;
+        $post->thumbnail_image = $thumbnailImgName;
+        $post->slider_images = json_encode($request->slider_images);
+        $post->serial_number = $request->serial_number;
+        $post->user_id = $user->id;
+        $post->save();
+        foreach ($languages as $language) {
+            $postContent = new PostContent();
+            $postContent->language_id = $language->id;
+            $postContent->user_id = $user->id;
+            $postContent->post_category_id = $request[$language->code . '_category'];
+            $postContent->post_id = $post->id;
+            $postContent->title = $request[$language->code . '_title'];
+            $postContent->slug = make_slug($request[$language->code . '_title']);
+            $postContent->author = $request[$language->code . '_author'];
+            $postContent->content = Purifier::clean($request[$language->code . '_content']);
+            $postContent->meta_keywords = $request[$language->code . '_meta_keywords'];
+            $postContent->meta_description = $request[$language->code . '_meta_description'];
+            $postContent->save();
+        }
+
+        return response()->json(['success' => 'Post added successfully!', 'id' => $post->id], 200);
+    }
+
+    // postCheck
+    public function postCheck(Request $request)
+    {
+        $content = PostContent::where('post_id', $request->id)->first();
+        return response()->json($content, 200);
+    }
+    // postUpdateContent
+    public function postUpdateContent(Request $request)
+    {
+        $content = PostContent::where('post_id', $request->id)->first();
+        $content -> content = $request->textarea;
+        $content -> save();
+        return response()->json(['success' => 'Your content successfully updated!'], 200);
+    }
+
     public function postDelete(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));

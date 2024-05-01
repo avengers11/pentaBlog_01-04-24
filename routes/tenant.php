@@ -696,10 +696,37 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
         // post
         Route::get('/post/{crypt}', 'post')->name('post');
+        Route::post('/post-add/{crypt}', 'postAdd')->name('postAdd');
+        Route::post('/post-update-content', 'postUpdateContent')->name('postUpdateContent');
+        Route::get('/post-check', 'postCheck')->name('postCheck');
         Route::post('/post-delete/{crypt}', 'postDelete')->name('postDelete');
+
+    });
+
+    //Site Management
+    Route::controller(\Pentaforce\SiteManagementApiController::class)->prefix('site-management')->group(function () {
+
+        // gallery
+        Route::get('/gallery/{crypt}', 'gallery')->name('gallery');
+
+        Route::post('/gallery-update/{crypt}', 'galleryUpdate')->name('galleryUpdate');
+
+        // // setting
+        // Route::get('/setting/{crypt}', 'setting')->name('setting');
+        // Route::post('/setting-update/{crypt}', 'settingUpdate')->name('settingUpdate');
+
+        // // category
+        // Route::get('/category/{crypt}', 'category')->name('category');
+        // Route::post('/category-add/{crypt}', 'categoryAdd')->name('categoryAdd');
+        // Route::post('/category-update/{crypt}', 'categoryUpdate')->name('categoryUpdate');
+        // Route::post('/category-delete/{crypt}', 'categoryDelete')->name('categoryDelete');
+
+        // // post
+        // Route::get('/post/{crypt}', 'post')->name('post');
+        // Route::post('/post-delete/{crypt}', 'postDelete')->name('postDelete');
 
     });
 
 });
 
-// php artisan make:controller Pentaforce/PostsApiController
+// php artisan make:controller Pentaforce/SiteManagementApiController
