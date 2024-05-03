@@ -37,7 +37,7 @@
                             <div class="post_img">
                                 <a href="{{ route('front.user.post_details', ['slug' => $sliderPost->slug, getParam()]) }}"
                                     class="d-block">
-                                    <img mm=mr src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
+                                    <img src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         class="img-fluid" alt="image">
                                 </a>
                                 <div class="post_overlay"
@@ -222,7 +222,7 @@
                                         <div class="grid_item mb-40">
                                             <div class="post_img">
                                                 <img data-src="{{ $latestPost->thumbnail_image != null ? Storage::url($latestPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
-                                                    class="img-fluid lazy" alt="image">
+                                                    class="img-fluid lazy" alt="image {{$latestPost->thumbnail_image}}">
                                                 <div class="post_overlay">
                                                     @php
                                                         $latestPostCategory = App\Models\User\PostCategory::where('id', $latestPost->post_category_id)->first();
