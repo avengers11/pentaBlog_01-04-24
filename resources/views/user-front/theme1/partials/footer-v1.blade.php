@@ -26,7 +26,7 @@
           <div class="widget_box about_box">
             @if (!is_null($footerInfo))
               <a href="{{route('front.user.detail.view', getParam())}}">
-                <img data-src="{{ asset('assets/user/img/footer/' . $footerInfo->logo) }}" class="img-fluid lazy" alt="website footer logo">
+                <img data-src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website footer logo">
               </a>
             @endif
 
