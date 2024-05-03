@@ -296,8 +296,7 @@ class PostsApiController extends Controller
         }
 
         $post = new Post();
-        $thumbnailImgName = time() . '.' . $thumbnailImgExt;
-        $post->thumbnail_image = $thumbnailImgName;
+        $post->thumbnail_image = $request->thumbnail_image;
         $post->slider_images = json_encode($request->slider_images);
         $post->serial_number = $request->serial_number;
         $post->user_id = $user->id;
