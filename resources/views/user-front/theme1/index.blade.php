@@ -37,7 +37,7 @@
                             <div class="post_img">
                                 <a href="{{ route('front.user.post_details', ['slug' => $sliderPost->slug, getParam()]) }}"
                                     class="d-block">
-                                    <img src="{{ asset('assets/user/img/posts/' . $sliderPost->slider_post_image) }}"
+                                    <img src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         class="img-fluid" alt="image">
                                 </a>
                                 <div class="post_overlay"
@@ -96,7 +96,7 @@
                             <a href="{{ route('front.user.posts', ['category' => $postCategory->id, getParam()]) }}"
                                 class="categories_box">
                                 <div class="cat_img">
-                                    <img data-src="{{ asset('assets/user/img/post-categories/' . $postCategory->image) }}"
+                                    <img data-src="{{ $postCategory->image != null ? Storage::url($postCategory->image) : asset('assets/admin/img/noimage.jpg') }}"
                                         class="img-fluid lazy" alt="image">
                                     <div class="cat_overlay">
                                         <div class="cat_content">
@@ -141,7 +141,7 @@
                                                 <div class="post_img">
                                                     <a
                                                         href="{{ route('front.user.post_details', ['slug' => $featuredPost->slug, getParam()]) }}">
-                                                        <img data-src="{{ asset('assets/user/img/posts/' . $featuredPost->featured_post_image) }}"
+                                                        <img data-src="{{ $featuredPost->featured_post_image != null ? Storage::url($featuredPost->featured_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                             class="img-fluid lazy" alt="image">
                                                     </a>
                                                     <div class="post_overlay">
@@ -221,7 +221,7 @@
                                     <div class="col-lg-6">
                                         <div class="grid_item mb-40">
                                             <div class="post_img">
-                                                <img data-src="{{ asset('assets/user/img/posts/' . $latestPost->thumbnail_image) }}"
+                                                <img data-src="{{ $latestPost->thumbnail_image != null ? Storage::url($latestPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                     class="img-fluid lazy" alt="image">
                                                 <div class="post_overlay">
                                                     @php
@@ -281,7 +281,7 @@
                         @if ($hs->author_info == 1 && !empty($authorInfo))
                             <div class="widget_box about_box mb-40">
                                 <div class="about_img">
-                                    <img data-src="{{ asset('assets/user/img/authors/' . $authorInfo->image) }}"
+                                    <img data-src="{{ $authorInfo->image != null ? Storage::url($authorInfo->image) : asset('assets/admin/img/noimage.jpg') }}"
                                         class="img-fluid lazy" alt="image">
                                 </div>
 
@@ -315,7 +315,7 @@
                                             <div class="post_img">
                                                 <a
                                                     href="{{ route('front.user.post_details', ['slug' => $mostViewedPost->slug, getParam()]) }}">
-                                                    <img data-src="{{ asset('assets/user/img/posts/' . $mostViewedPost->thumbnail_image) }}"
+                                                    <img data-src="{{ $mostViewedPost->thumbnail_image != null ? Storage::url($mostViewedPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }} {{ Storage::url() }}"
                                                         class="img-fluid lazy" alt="post image">
                                                 </a>
                                             </div>
@@ -410,7 +410,7 @@
                             @foreach ($galleryItems as $item)
                                 <div class="grid_item">
                                     <div class="post_img">
-                                        <img src="{{ asset('assets/user/img/gallery/' . $item->image) }}"
+                                        <img src="{{ $item->image != null ? Storage::url($item->image) : asset('assets/admin/img/noimage.jpg') }}"
                                             class="img-fluid" alt="image">
                                         <div class="post_overlay">
                                             <div class="play_button"
@@ -419,7 +419,7 @@
                                                     <a href="{{ $item->video_link }}" class="play_btn mfp-iframe"><i
                                                             class="fas fa-play"></i></a>
                                                 @else
-                                                    <a href="{{ asset('assets/user/img/gallery/' . $item->image) }}"
+                                                    <a href="{{ Storage::url($item->image) }}"
                                                         class="play_btn"><i class="fas fa-image"></i></a>
                                                 @endif
                                             </div>
@@ -506,7 +506,7 @@
                                         <div class="grid_item mb-40">
                                             <div class="post_img">
                                                 <a href="#">
-                                                    <img data-src="{{ asset('assets/user/img/posts/' . $featCatPost->thumbnail_image) }}"
+                                                    <img data-src="{{ $featCatPost->thumbnail_image != null ? Storage::url($featCatPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }} {{ asset('assets/user/img/posts/' . ) }}"
                                                         class="img-fluid lazy" alt="image">
                                                 </a>
                                                 <div class="post_overlay">
