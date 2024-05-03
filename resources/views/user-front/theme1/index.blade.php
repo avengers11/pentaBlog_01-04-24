@@ -37,7 +37,7 @@
                             <div class="post_img">
                                 <a href="{{ route('front.user.post_details', ['slug' => $sliderPost->slug, getParam()]) }}"
                                     class="d-block">
-                                    <img src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
+                                    <img mm=mr src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         class="img-fluid" alt="image">
                                 </a>
                                 <div class="post_overlay"
