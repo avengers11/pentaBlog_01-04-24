@@ -315,7 +315,7 @@
                                             <div class="post_img">
                                                 <a
                                                     href="{{ route('front.user.post_details', ['slug' => $mostViewedPost->slug, getParam()]) }}">
-                                                    <img data-src="{{ $mostViewedPost->thumbnail_image != null ? Storage::url($mostViewedPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }} {{ Storage::url() }}"
+                                                    <img data-src="{{ $mostViewedPost->thumbnail_image != null ? Storage::url($mostViewedPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                         class="img-fluid lazy" alt="post image">
                                                 </a>
                                             </div>
@@ -506,7 +506,7 @@
                                         <div class="grid_item mb-40">
                                             <div class="post_img">
                                                 <a href="#">
-                                                    <img data-src="{{ $featCatPost->thumbnail_image != null ? Storage::url($featCatPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }} {{ asset('assets/user/img/posts/' . ) }}"
+                                                    <img data-src="{{ $featCatPost->thumbnail_image != null ? Storage::url($featCatPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                         class="img-fluid lazy" alt="image">
                                                 </a>
                                                 <div class="post_overlay">
