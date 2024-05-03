@@ -3,7 +3,7 @@
     @if (!empty($authorInfo))
       <div class="widget_box about_box mb-40">
         <div class="about_img">
-            <img data-src="{{ asset('assets/user/img/authors/' . $authorInfo->image) }}" class="img-fluid lazy" alt="image">
+            <img data-src="{{ $authorInfo->image != null ? Storage::url($authorInfo->image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="image">
         </div>
 
         <div class="about_content">
@@ -45,7 +45,7 @@
           <div class="single_post d-flex align-items-center">
             <div class="post_img">
               <a href="{{ route('front.user.post_details', ['slug' => $popularPost->slug,getParam()]) }}">
-                <img data-src="{{ asset('assets/user/img/posts/' . $popularPost->thumbnail_image) }}" class="img-fluid lazy" alt="post image">
+                <img data-src="{{ $popularPost->thumbnail_image != null ? Storage::url($popularPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="post image">
               </a>
             </div>
 

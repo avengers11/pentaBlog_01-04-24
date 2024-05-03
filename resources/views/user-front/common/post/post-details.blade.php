@@ -56,7 +56,7 @@
                     <div class="col-lg-6">
                       <div class="olima_img">
                         <a href="{{ asset('assets/user/img/posts/slider-images/' . $img) }}" class="gallery-single">
-                          <img data-src="{{ asset('assets/user/img/posts/slider-images/' . $img) }}" class="img-fluid lazy" alt="slider image">
+                          <img data-src="{{ $img != null ? Storage::url($img) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="slider image">
                         </a>
                       </div>
                     </div>
@@ -121,7 +121,7 @@
                         @php $sldImgs = json_decode($post->slider_images); @endphp
 
                         <a href="{{ route('front.user.post_details', ['slug' => $post->slug, getParam()]) }}">
-                          <img data-src="{{ asset('assets/user/img/posts/' . $post->thumbnail_image) }}" class="img-fluid lazy" alt="post image">
+                          <img data-src="{{ $post->thumbnail_image != null ? Storage::url($post->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="post image">
                         </a>
                       </div>
 

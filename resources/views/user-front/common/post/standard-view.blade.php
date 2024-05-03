@@ -26,7 +26,7 @@
 
               <div class="post_img">
                 <a href="{{ route('front.user.post_details', ['slug' => $post->slug, getParam()]) }}">
-                  <img data-src="{{ asset('assets/user/img/posts/slider-images/' . $sldImgs[0]) }}" class="w-100 lazy" alt="post image">
+                  <img data-src="{{ $sldImgs[0] != null ? Storage::url($sldImgs[0]) : asset('assets/admin/img/noimage.jpg') }}" class="w-100 lazy" alt="post image">
                 </a>
               </div>
 
