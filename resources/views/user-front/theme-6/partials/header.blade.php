@@ -17,7 +17,7 @@
                         @if($websiteInfo->logo)
                         <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
                             alt="{{ $websiteInfo->website_title }}"
-                            src="{{ asset('assets/user/img/' . $websiteInfo->logo) }}">
+                            src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
                         @else
                         <img src="{{asset('assets/user/img/themes/default_6.png') }}" data-src="{{asset('assets/user/img/themes/default_6.png') }}" alt="Logo">
                         @endif
@@ -44,7 +44,7 @@
                         @if($websiteInfo->logo)
                         <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
                             alt="{{ $websiteInfo->website_title }}"
-                            src="{{ asset('assets/user/img/' . $websiteInfo->logo) }}">
+                            src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
                          @else
                          <img src="{{asset('assets/user/img/themes/default_6.png')}}" alt="Logo" data-src="{{asset('assets/user/img/themes/default_6.png')}}">
                          @endif

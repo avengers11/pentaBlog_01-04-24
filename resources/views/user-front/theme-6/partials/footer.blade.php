@@ -13,7 +13,7 @@
                                         <img class="lazyload"
                                             data-src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
                                             alt="{{ $websiteInfo->website_title }}"
-                                            src="{{ asset('assets/user/img/footer/' . $footerInfo->logo) }}">
+                                            src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
                                     </a>
                                 </div>
                             @else
