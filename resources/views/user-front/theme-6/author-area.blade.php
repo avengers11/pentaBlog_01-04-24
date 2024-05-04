@@ -2,7 +2,7 @@
 <div class="widget widget-author text-center bg-light">
     <div class="widget-author_img mx-auto">
         <div class="lazy-container ratio ratio-1-1 rounded-circle">
-            <img class="lazyload" data-src="{{ asset('assets/user/img/authors/' . $authorInfo->image) }}" alt="{{ $authorInfo->name }}">
+            <img class="lazyload" data-src="{{ $authorInfo->image != null ? Storage::url($authorInfo->image) : asset('assets/admin/img/noimage.jpg') }}" alt="{{ $authorInfo->name }}">
         </div>
     </div>
     <div class="widget-author_info mt-20">

@@ -6,7 +6,7 @@
           <div class="col-lg-4">
             <div class="widget_box about_box">
               <a href="{{route('front.user.detail.view', getParam())}}">
-                <img data-src="{{ asset('assets/user/img/footer/' . $footerInfo->logo) }}" class="img-fluid lazy" alt="website footer logo">
+                <img data-src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website footer logo">
               </a>
 
               <p class="mt-3">{{ !is_null($footerInfo) ? $footerInfo->about_company : '' }}</p>
@@ -44,7 +44,7 @@
         <div class="col-lg-4">
           <div class="widget_box contact_widget">
             <h4>{{ $keywords['Contact_Us'] ?? 'Contact Us' }}</h4>
-            
+
             @isset($websiteInfo->address)
             <p><span><i class="fas fa-map-marker-alt"></i></span>{{ $websiteInfo->address }}</p>
             @endisset

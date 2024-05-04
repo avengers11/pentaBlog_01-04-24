@@ -25,7 +25,7 @@
         <div class="grid_item">
           <div class="post_img">
             <a href="{{ route('front.user.post_details', ['slug' => $sliderPost->slug, getParam()]) }}">
-              <img data-src="{{ asset('assets/user/img/posts/' . $sliderPost->slider_post_image) }}" class="img-fluid lazy" alt="image">
+              <img data-src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="image">
             </a>
           </div>
 
@@ -120,7 +120,7 @@
                       <div class="col-lg-3">
                         <div class="grid_item mb-30">
                           <div class="post_img">
-                            <img data-src="{{ asset('assets/user/img/posts/' . $featCatPost->thumbnail_image) }}" class="img-fluid lazy" alt="image">
+                            <img data-src="{{ $featCatPost->thumbnail_image != null ? Storage::url($featCatPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="image">
 
                             @php
                               // first, convert the string into date object
@@ -183,7 +183,7 @@
                 <div class="col-xl-4 col-lg-6 grid_item d-flex align-items-center mb-40">
                   <div class="post_img">
                     <a href="{{ route('front.user.post_details', ['slug' => $latestPost->slug, getParam()]) }}">
-                      <img data-src="{{ asset('assets/user/img/posts/' . $latestPost->thumbnail_image) }}" class="img-fluid lazy" alt="image">
+                      <img data-src="{{ $latestPost->thumbnail_image != null ? Storage::url($latestPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="image">
                     </a>
                   </div>
 
@@ -247,7 +247,7 @@
                 @foreach ($galleryItems as $item)
                   <div class="grid_item grid_post_big">
                     <div class="post_img">
-                      <img data-src="{{ asset('assets/user/img/gallery/' . $item->image) }}" class="w-100 lazy" alt="image">
+                      <img data-src="{{ $item->image != null ? Storage::url($item->image) : asset('assets/admin/img/noimage.jpg') }}" class="w-100 lazy" alt="image">
                       <div class="post_overlay">
                         <div class="play_button">
                           @if ($item->item_type == 'video')
@@ -272,7 +272,7 @@
                 @foreach ($galleryItems as $item)
                   <div class="grid_item d-flex align-items-center">
                     <div class="post_img">
-                      <img src="{{ asset('assets/user/img/gallery/' . $item->image) }}" class="img-fluid" alt="image">
+                      <img src="{{ $item->image != null ? Storage::url($item->image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid" alt="image">
                       <div class="post_overlay">
                       </div>
                     </div>
@@ -317,7 +317,7 @@
               <div class="grid_item mb-50">
                 <div class="post_img">
                   <a href="{{ route('front.user.post_details', ['slug' => $featuredPost->slug, getParam()]) }}">
-                    <img data-src="{{ asset('assets/user/img/posts/' . $featuredPost->featured_post_image) }}" class="img-fluid lazy" alt="image">
+                    <img data-src="{{ $featuredPost->featured_post_image != null ? Storage::url($featuredPost->featured_post_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="image">
                   </a>
 
                   @php

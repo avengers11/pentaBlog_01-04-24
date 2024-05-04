@@ -56,7 +56,7 @@
                                     title="{{ strlen($sliderPost->title) > 70 ? mb_substr($sliderPost->title, 0, 70, 'UTF-8') . '...' : $sliderPost->title }}"
                                     class="lazy-container ratio">
                                     <img class="lazyload"
-                                        data-src="{{ asset('assets/user/img/posts/' . $sliderPost->slider_post_image) }}"
+                                        data-src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="{{ $sliderPost->title }}">
                                 </a>
                             </div>

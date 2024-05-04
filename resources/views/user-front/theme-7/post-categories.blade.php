@@ -14,7 +14,7 @@
                                 <div class="blog_img mb-15 radius-md">
                                     <div class="lazy-container ratio ratio-2-3">
                                         <img class="lazyload"
-                                            data-src="{{ asset('assets/user/img/post-categories/' . $postCategory->image) }}"
+                                            data-src="{{ $postCategory->image != null ? Storage::url($postCategory->image) : asset('assets/admin/img/noimage.jpg') }}"
                                             alt="{{ $postCategory->name }}">
                                     </div>
                                 </div>

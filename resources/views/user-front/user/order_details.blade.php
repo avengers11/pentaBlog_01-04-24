@@ -300,7 +300,7 @@
                                                         @if ($order->item->type == 'digital')
                                                             @for ($i = 0; $i < $order->qty; $i++)
                                                                 <tr>
-                                                                    <td><img src="{{ asset('assets/front/img/user/items/thumbnail/' . $order->item->thumbnail) }}"
+                                                                    <td><img src="{{ $order->item->thumbnail != null ? Storage::url($order->item->thumbnail) : asset('assets/admin/img/noimage.jpg') }}"
                                                                             alt="product" width="100"></td>
                                                                     <td>
                                                                         <a class="d-block"
@@ -339,7 +339,7 @@
                                                         @else
                                                             <tr>
                                                                 <td>
-                                                                    <img src="{{ asset('assets/front/img/user/items/thumbnail/' . $order->item->thumbnail) }}"
+                                                                    <img src="{{ $order->item->thumbnail != null ? Storage::url($order->item->thumbnail) : asset('assets/admin/img/noimage.jpg') }}"
                                                                         alt="product" width="100">
                                                                 </td>
                                                                 <td>

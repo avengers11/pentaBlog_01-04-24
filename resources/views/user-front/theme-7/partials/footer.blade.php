@@ -11,9 +11,9 @@
                                     <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}"
                                         target="_self" title="{{ $websiteInfo->website_title }}">
                                         <img class="lazyload"
-                                            data-src="{{ asset('assets/user/img/footer/' . $footerInfo->logo) }}"
+                                            data-src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
                                             alt="{{ $websiteInfo->website_title }}"
-                                            src="{{ asset('assets/user/img/footer/' . $footerInfo->logo) }}">
+                                            src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
                                     </a>
                                 </div>
                             @else

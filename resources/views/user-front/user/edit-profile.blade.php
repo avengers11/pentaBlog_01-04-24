@@ -54,7 +54,7 @@
                                             @csrf
                                             <div class="upload-img">
                                                 <div class="img-box">
-                                                    <img data-src="{{ is_null($authUser->image) ? asset('assets/user/img/profile.jpg') : asset('assets/user/img/users/' . $authUser->image) }}"
+                                                    <img data-src="{{ $authUser->image != null ? Storage::url($authUser->image) : asset('assets/user/img/profile.jpg') }}"
                                                         alt="user image" class="user-photo lazy">
                                                 </div>
 

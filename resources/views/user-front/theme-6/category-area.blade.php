@@ -7,7 +7,7 @@
                 <div class="card">
                     <div class="card-img">
                         <div class="lazy-container ratio ratio-2-3">
-                            <img class="lazyload" data-src="{{ asset('assets/user/img/post-categories/' . $postCategory->image) }}" alt="{{ $postCategory->name }}">
+                            <img class="lazyload" data-src="{{ $postCategory->image != null ? Storage::url($postCategory->image) : asset('assets/admin/img/noimage.jpg') }}" alt="{{ $postCategory->name }}">
                         </div>
                     </div>
                     <div class="card-content text-center">

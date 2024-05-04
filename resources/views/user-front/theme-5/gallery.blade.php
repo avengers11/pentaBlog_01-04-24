@@ -20,14 +20,14 @@
                     title="Image">
                     <div class="lazy-container ratio ratio-1-1 radius-sm">
                         <img class="lazyload"
-                            data-src="{{ asset('assets/user/img/gallery/' . $item->image) }}"
+                            data-src="{{ $item->image != null ? Storage::url($item->image) : asset('assets/admin/img/noimage.jpg') }}"
                             alt="Image">
                     </div>
                 </a>
                 @else
                 <a href="{{ $item->video_link }}" target="_self" title="video" class="video-link">
                     <div class="lazy-container ratio ratio-1-1 radius-sm">
-                        <img class="lazyload" data-src="{{ asset('assets/user/img/gallery/' . $item->image) }}" alt="Image">
+                        <img class="lazyload" data-src="{{ $item->image != null ? Storage::url($item->image) : asset('assets/admin/img/noimage.jpg') }}" alt="Image">
                     </div>
                     <span class="icon">
                         <i class="fas fa-play"></i>

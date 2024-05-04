@@ -21,7 +21,7 @@
                                     title="{{ strlen($latestPost->title) > 50 ? mb_substr($latestPost->title, 0, 50, 'UTF-8') . '...' : $latestPost->title }}"
                                     class="lazy-container ratio ratio-5-3">
                                     <img class="lazyload"
-                                        data-src="{{ asset('assets/user/img/posts/' . $latestPost->thumbnail_image) }}"
+                                        data-src="{{ $latestPost->thumbnail_image != null ? Storage::url($latestPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="{{ strlen($latestPost->title) > 50 ? mb_substr($latestPost->title, 0, 50, 'UTF-8') . '...' : $latestPost->title }}">
                                 </a>
                             </div>
@@ -58,7 +58,7 @@
                                 <a href="{{ route('front.user.post_details', ['slug' => $latestPost->slug, getParam()]) }}"
                                     target="_self" title="Link" class="lazy-container ratio radius-md">
                                     <img class="lazyload"
-                                        data-src="{{ asset('assets/user/img/posts/' . $latestPost->thumbnail_image) }}"
+                                        data-src="{{ $latestPost->thumbnail_image != null ? Storage::url($latestPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="{{ strlen($latestPost->title) > 40 ? mb_substr($latestPost->title, 0, 40, 'UTF-8') . '...' : $latestPost->title }}">
                                 </a>
                             </div>

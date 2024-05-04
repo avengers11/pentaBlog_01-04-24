@@ -11,8 +11,8 @@
                                     target="_self" title="{{ $websiteInfo->website_title }}">
                                     @if($footerInfo->logo)
                                     <img class="lazyload"
-                                        src="{{ asset('assets/user/img/footer/' . $footerInfo->logo) }}"
-                                        data-src="{{ asset('assets/user/img/footer/' . $footerInfo->logo) }}"
+                                        src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                        data-src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="{{ $websiteInfo->website_title }}">
                                     @else
                                         <img data-src="{{ asset('assets/user/img/themes/default_dark.png') }}" src="{{ asset('assets/user/img/themes/default_dark.png') }}" alt="Logo">

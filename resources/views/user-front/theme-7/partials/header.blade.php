@@ -15,8 +15,8 @@
                     <a href="{{ route('front.user.detail.view', getParam()) }}" target="_self"
                         title="{{ $websiteInfo->website_title }}">
                         @if ($websiteInfo->logo)
-                            <img class="lazyload" data-src="{{ asset('assets/user/img/' . $websiteInfo->logo) }}"
-                                src="{{ asset('assets/user/img/' . $websiteInfo->logo) }}"
+                            <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
                                 alt="{{ $websiteInfo->website_title }}">
                         @else
                             <img src="{{ asset('assets/user/img/themes/default_6.png') }}" alt="Logo">
@@ -79,8 +79,8 @@
                     <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}" target="_self"
                         title="{{ $websiteInfo->website_title }}">
                         @if ($websiteInfo->logo)
-                            <img class="lazyload" data-src="{{ asset('assets/user/img/' . $websiteInfo->logo) }}"
-                                src="{{ asset('assets/user/img/' . $websiteInfo->logo) }}"
+                            <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
                                 alt="{{ $websiteInfo->website_title }}">
                         @else
                             <img src="{{ asset('assets/user/img/themes/default_6.png') }}" alt="Logo">

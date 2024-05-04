@@ -27,7 +27,7 @@
                             <div class="blog_img">
                                 <div class="lazy-container ratio ratio-5-4">
                                     <img class="lazyload"
-                                        data-src="{{ asset('assets/user/img/posts/' . $firstItem->featured_post_image) }}"
+                                        data-src="{{ $firstItem->featured_post_image != null ? Storage::url($firstItem->featured_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="{{ $firstItem->title }}">
                                 </div>
                             </div>
@@ -90,7 +90,7 @@
                                             title="{{ strlen($item->title) > 30 ? mb_substr($item->title, 0, 30, 'UTF-8') . '...' : $item->title }}"
                                             class="lazy-container ratio ratio-1-1 radius-sm">
                                             <img class="lazyload"
-                                                data-src="{{ asset('assets/user/img/posts/' . $item->featured_post_image) }}"
+                                                data-src="{{ $item->featured_post_image != null ? Storage::url($item->featured_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                 alt="{{ strlen($item->title) > 15 ? mb_substr($item->title, 0, 15, 'UTF-8') . '...' : $item->title }}">
                                         </a>
                                     </div>

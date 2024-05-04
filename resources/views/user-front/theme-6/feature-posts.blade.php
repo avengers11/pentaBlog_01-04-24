@@ -18,7 +18,7 @@
                             <div class="blog_img">
                                 <a href="{{ route('front.user.post_details', ['slug' => $post->slug, getParam()]) }}" target="_self" title="{{ $post->title }}" class="lazy-container ratio ratio-2-3">
                                     <img class="lazyload"
-                                        data-src="{{ asset('assets/user/img/posts/' . $post->featured_post_image) }}"
+                                        data-src="{{ $post->featured_post_image != null ? Storage::url($post->featured_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="{{ $post->title }}">
                                 </a>
                             </div>

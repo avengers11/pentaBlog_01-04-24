@@ -71,7 +71,7 @@
                                                                 <tr>
                                                                     <td width="15%"> <a
                                                                             href="{{ route('front.user.item_details', ['slug' => $content->slug, getParam()]) }}">
-                                                                            <img src="{{ asset('assets/front/img/user/items/thumbnail/' . $item->item->thumbnail) }}"
+                                                                            <img src="{{ $item->item->thumbnail != null ? Storage::url($item->item->thumbnail) : asset('assets/admin/img/noimage.jpg') }}"
                                                                                 class="img-fluid" alt="image">
                                                                         </a>
                                                                     </td>

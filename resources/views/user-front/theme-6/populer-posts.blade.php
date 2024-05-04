@@ -16,7 +16,7 @@
                                 title="{{ strlen($mostViewedPost->title) > 40 ? mb_substr($mostViewedPost->title, 0, 40, 'UTF-8') . '...' : $mostViewedPost->title }}"
                                 class="lazy-container ratio ratio-1-1 rounded-circle">
                                 <img class="lazyload"
-                                    data-src="{{ asset('assets/user/img/posts/' . $mostViewedPost->thumbnail_image) }}"
+                                    data-src="{{ $mostViewedPost->thumbnail_image != null ? Storage::url($mostViewedPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                     alt="{{ strlen($mostViewedPost->title) > 40 ? mb_substr($mostViewedPost->title, 0, 40, 'UTF-8') . '...' : $mostViewedPost->title }}">
                             </a>
                         </div>

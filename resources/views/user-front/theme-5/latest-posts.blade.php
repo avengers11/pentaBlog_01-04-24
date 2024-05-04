@@ -32,7 +32,7 @@
                                 title="{{ strlen($latestPost->title) > 30 ? mb_substr($latestPost->title, 0, 30, 'UTF-8') . '...' : $latestPost->title }}"
                                 class="lazy-container ratio ratio-5-3 radius-md">
                                 <img class="lazyload"
-                                    data-src="{{ asset('assets/user/img/posts/' . $latestPost->thumbnail_image) }}"
+                                    data-src="{{ $latestPost->thumbnail_image != null ? Storage::url($latestPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                     alt="Image">
                             </a>
                         </div>

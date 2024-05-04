@@ -10,7 +10,7 @@
                                 <div class="blog_img">
                                     <div class="lazy-container ratio ratio-1-3">
                                         <img class="lazyload"
-                                            data-src="{{ asset('assets/user/img/posts/' . $sliderPost->slider_post_image) }}"
+                                            data-src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                             alt="{{ $sliderPost->title }}">
                                     </div>
                                 </div>

@@ -46,7 +46,7 @@
                                     <div class="blog_img">
                                         <div class="lazy-container ratio ratio-1-3">
                                             <img class="lazyload"
-                                                data-src="{{ asset('assets/user/img/posts/' . $featCatPost->thumbnail_image) }}"
+                                                data-src="{{ $featCatPost->thumbnail_image != null ? Storage::url($featCatPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                 alt="Blog Image">
                                         </div>
                                     </div>

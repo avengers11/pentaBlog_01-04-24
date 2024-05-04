@@ -45,7 +45,7 @@
                                     title="{{ strlen($featCatPost->title) > 70 ? mb_substr($featCatPost->title, 0, 70, 'UTF-8') . '...' : $featCatPost->title }}"
                                     class="lazy-container ratio ratio-5-3">
                                     <img class="lazyload"
-                                        data-src="{{ asset('assets/user/img/posts/' . $featCatPost->thumbnail_image) }}"
+                                        data-src="{{ $featCatPost->thumbnail_image != null ? Storage::url($featCatPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="{{ strlen($featCatPost->title) > 70 ? mb_substr($featCatPost->title, 0, 70, 'UTF-8') . '...' : $featCatPost->title }}">
                                 </a>
                             </div>

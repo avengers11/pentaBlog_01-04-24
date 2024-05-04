@@ -52,7 +52,7 @@
               @foreach ($recentPostInfos as $recentPostInfo)
                 <div class="single_post d-flex align-items-center">
                   <div class="post_img">
-                    <img data-src="{{ asset('assets/user/img/posts/' . $recentPostInfo->thumbnail_image) }}" class="img-fluid lazy" alt="image" width="70">
+                    <img data-src="{{ $recentPostInfo->thumbnail_image != null ? Storage::url($recentPostInfo->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="image" width="70">
                   </div>
 
                   <div class="post_content">

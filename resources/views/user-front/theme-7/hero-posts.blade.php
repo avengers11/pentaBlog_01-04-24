@@ -26,7 +26,7 @@
                                             title="{{ strlen($item->title) > 50 ? mb_substr($item->title, 0, 50, 'UTF-8') . '...' : $item->title }}"
                                             class="lazy-container ratio">
                                             <img class="lazyload"
-                                                data-src="{{ asset('assets/user/img/posts/' . $item->hero_post_image) }}"
+                                                data-src="{{ $item->hero_post_image != null ? Storage::url($item->hero_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                 alt="{{ strlen($item->title) > 50 ? mb_substr($item->title, 0, 50, 'UTF-8') . '...' : $item->title }}">
                                         </a>
                                     </div>
@@ -69,7 +69,7 @@
                                     title=" {{ strlen($item->title) > 55 ? mb_substr($item->title, 0, 55, 'UTF-8') . '...' : $item->title }}"
                                     class="lazy-container ratio ratio-1-3">
                                     <img class="lazyload"
-                                        data-src="{{ asset('assets/user/img/posts/' . $item->hero_post_image) }}"
+                                        data-src="{{ $item->hero_post_image != null ? Storage::url($item->hero_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                         alt="Blog Image">
                                 </a>
                             </div>
@@ -110,7 +110,7 @@
                                             title="{{ strlen($item->title) > 50 ? mb_substr($item->title, 0, 50, 'UTF-8') . '...' : $item->title }}"
                                             class="lazy-container ratio">
                                             <img class="lazyload"
-                                                data-src="{{ asset('assets/user/img/posts/' . $item->hero_post_image) }}"
+                                                data-src="{{ $item->hero_post_image != null ? Storage::url($item->hero_post_image) : asset('assets/admin/img/noimage.jpg') }}"
                                                 alt="{{ strlen($item->title) > 50 ? mb_substr($item->title, 0, 50, 'UTF-8') . '...' : $item->title }}">
                                         </a>
                                     </div>

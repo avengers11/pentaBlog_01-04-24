@@ -17,7 +17,7 @@
             <article class="blog blog_v4 text-center mb-30">
                 <div class="blog_img">
                     <a href="{{ route('front.user.post_details', ['slug' => $latestPost->slug, getParam()]) }}" target="_self" title="{{ strlen($latestPost->title) > 50 ? mb_substr($latestPost->title, 0, 50, 'UTF-8') . '...' : $latestPost->title }}" class="lazy-container ratio ratio-5-3">
-                        <img class="lazyload" data-src="{{ asset('assets/user/img/posts/' . $latestPost->thumbnail_image) }}" alt="{{ strlen($latestPost->title) > 50 ? mb_substr($latestPost->title, 0, 50, 'UTF-8') . '...' : $latestPost->title }}">
+                        <img class="lazyload" data-src="{{ $latestPost->thumbnail_image != null ? Storage::url($latestPost->thumbnail_image) : asset('assets/admin/img/noimage.jpg') }}" alt="{{ strlen($latestPost->title) > 50 ? mb_substr($latestPost->title, 0, 50, 'UTF-8') . '...' : $latestPost->title }}">
                     </a>
                 </div>
                 <div class="blog_content px-3">
