@@ -1,4 +1,5 @@
 <?php
+use PhpOffice\PhpSpreadsheet\Calculation\Category;
 
 $domain = env('WEBSITE_HOST');
 
@@ -706,10 +707,19 @@ Route::group(['prefix' => 'pentaforce'], function () {
     //Site Management
     Route::controller(\Pentaforce\SiteManagementApiController::class)->prefix('site-management')->group(function () {
 
-        // gallery
+        // settings
         Route::get('/gallery/{crypt}', 'gallery')->name('gallery');
+        Route::post('/gallery-settings/{crypt}', 'gallerySettings')->name('gallerySettings');
 
+        // Category
+        Route::get('/gallery/category/{crypt}', 'galleryCategory')->name('galleryCategory');
+        Route::post('/gallery/category/add/{crypt}', 'galleryCategoryAdd')->name('galleryCategoryAdd');
+        Route::post('/gallery/category/update/{crypt}', 'galleryCategoryUpdate')->name('galleryCategoryUpdate');
+        Route::post('/gallery/category/delete/{crypt}', 'galleryCategoryDelete')->name('galleryCategoryDelete');
+
+        Route::post('/gallery-add/{crypt}', 'galleryAdd')->name('galleryAdd');
         Route::post('/gallery-update/{crypt}', 'galleryUpdate')->name('galleryUpdate');
+        Route::post('/gallery-delete/{crypt}', 'galleryDelete')->name('galleryDelete');
 
         // // setting
         // Route::get('/setting/{crypt}', 'setting')->name('setting');
