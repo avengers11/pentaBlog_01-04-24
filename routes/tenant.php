@@ -705,21 +705,63 @@ Route::group(['prefix' => 'pentaforce'], function () {
     });
 
     //Site Management
-    Route::controller(\Pentaforce\SiteManagementApiController::class)->prefix('site-management')->group(function () {
+    Route::controller(\Pentaforce\SiteManagementApiController::class)->prefix('site-management')->group(function ()
+    {
 
-        // settings
-        Route::get('/gallery/{crypt}', 'gallery')->name('gallery');
-        Route::post('/gallery-settings/{crypt}', 'gallerySettings')->name('gallerySettings');
 
-        // Category
-        Route::get('/gallery/category/{crypt}', 'galleryCategory')->name('galleryCategory');
-        Route::post('/gallery/category/add/{crypt}', 'galleryCategoryAdd')->name('galleryCategoryAdd');
-        Route::post('/gallery/category/update/{crypt}', 'galleryCategoryUpdate')->name('galleryCategoryUpdate');
-        Route::post('/gallery/category/delete/{crypt}', 'galleryCategoryDelete')->name('galleryCategoryDelete');
+        //FAQ Management
+        Route::group(['prefix' => 'gallery'], function () {
+            // settings
+            Route::get('/{crypt}', 'gallery')->name('gallery');
+            Route::post('/settings/{crypt}', 'gallerySettings')->name('gallerySettings');
 
-        Route::post('/gallery-add/{crypt}', 'galleryAdd')->name('galleryAdd');
-        Route::post('/gallery-update/{crypt}', 'galleryUpdate')->name('galleryUpdate');
-        Route::post('/gallery-delete/{crypt}', 'galleryDelete')->name('galleryDelete');
+            // Category
+            Route::get('/category/{crypt}', 'galleryCategory')->name('galleryCategory');
+            Route::post('/category/add/{crypt}', 'galleryCategoryAdd')->name('galleryCategoryAdd');
+            Route::post('/category/update/{crypt}', 'galleryCategoryUpdate')->name('galleryCategoryUpdate');
+            Route::post('/category/delete/{crypt}', 'galleryCategoryDelete')->name('galleryCategoryDelete');
+
+            // gallery
+            Route::post('/add/{crypt}', 'galleryAdd')->name('galleryAdd');
+            Route::post('/update/{crypt}', 'galleryUpdate')->name('galleryUpdate');
+            Route::post('/delete/{crypt}', 'galleryDelete')->name('galleryDelete');
+        });
+
+
+        //FAQ Management
+        Route::group(['prefix' => 'faq'], function () {
+            // faq
+            Route::get('/{crypt}', 'faq')->name('faq');
+            Route::post('/add/{crypt}', 'faqAdd')->name('faqAdd');
+            Route::post('/update/{crypt}', 'faqUpdate')->name('faqUpdate');
+            Route::post('/delete/{crypt}', 'faqDelete')->name('faqDelete');
+        });
+
+
+        //Advertisements
+        Route::group(['prefix' => 'advertisement'], function () {
+            Route::get('/{crypt}', 'advertisement')->name('advertisement');
+            Route::post('/add/{crypt}', 'advertisementAdd')->name('advertisementAdd');
+            Route::post('/update/{crypt}', 'advertisementUpdate')->name('advertisementUpdate');
+            Route::post('/delete/{crypt}', 'advertisementDelete')->name('advertisementDelete');
+        });
+
+        //language
+        Route::group(['prefix' => 'language'], function () {
+            Route::get('/{crypt}', 'language')->name('language');
+            Route::post('/add/{crypt}', 'languageAdd')->name('languageAdd');
+            Route::post('/update/{crypt}', 'languageUpdate')->name('languageUpdate');
+            Route::post('/delete/{crypt}', 'languageDelete')->name('languageDelete');
+            Route::post('/default/{crypt}', 'languageDefault')->name('languageDefault');
+        });
+
+        //vCard
+        Route::group(['prefix' => 'vCard'], function () {
+            Route::get('/{crypt}', 'vCard')->name('vCard');
+            Route::post('/add/{crypt}', 'vCardAdd')->name('vCardAdd');
+            Route::post('/update/{crypt}', 'vCardUpdate')->name('vCardUpdate');
+            Route::post('/delete/{crypt}', 'vCardDelete')->name('vCardDelete');
+        });
 
         // // setting
         // Route::get('/setting/{crypt}', 'setting')->name('setting');
