@@ -413,6 +413,25 @@ class SiteManagementApiController extends Controller
 
         return response()->json(["publisher_id" => $data, "ads" => $ads]);
     }
+    public function advertisementSettingUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $validator = Validator::make($request->all(), [
+            'adsense_publisher_id' => 'required'
+        ],[
+            'adsense_publisher_id.required' => 'The publisher field is required'
+         ]);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        BasicSetting::where('user_id', $user->id)->update(['adsense_publisher_id' => $request->adsense_publisher_id]);
+        return response()->json(['success' => 'Settings updated successfully!'], 200);
+    }
+
 
     public function advertisementAdd(Request $request, $crypt)
     {

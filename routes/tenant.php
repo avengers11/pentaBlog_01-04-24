@@ -741,6 +741,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
         //Advertisements
         Route::group(['prefix' => 'advertisement'], function () {
             Route::get('/{crypt}', 'advertisement')->name('advertisement');
+            Route::post('/settings-update/{crypt}', 'advertisementSettingUpdate')->name('advertisementSettingUpdate');
             Route::post('/add/{crypt}', 'advertisementAdd')->name('advertisementAdd');
             Route::post('/update/{crypt}', 'advertisementUpdate')->name('advertisementUpdate');
             Route::post('/delete/{crypt}', 'advertisementDelete')->name('advertisementDelete');
