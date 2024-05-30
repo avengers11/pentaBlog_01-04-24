@@ -707,8 +707,6 @@ Route::group(['prefix' => 'pentaforce'], function () {
     //Site Management
     Route::controller(\Pentaforce\SiteManagementApiController::class)->prefix('site-management')->group(function ()
     {
-
-
         //FAQ Management
         Route::group(['prefix' => 'gallery'], function () {
             // settings
@@ -761,7 +759,17 @@ Route::group(['prefix' => 'pentaforce'], function () {
             Route::get('/{crypt}', 'vCard')->name('vCard');
             Route::post('/add/{crypt}', 'vCardAdd')->name('vCardAdd');
             Route::post('/update/{crypt}', 'vCardUpdate')->name('vCardUpdate');
+            Route::post('/update-submit/{crypt}', 'vCardUpdateSubmit')->name('vCardUpdateSubmit');
             Route::post('/delete/{crypt}', 'vCardDelete')->name('vCardDelete');
+        });
+
+        //page
+        Route::group(['prefix' => 'page'], function () {
+            Route::get('/{crypt}', 'page')->name('page');
+            Route::post('/add/{crypt}', 'pageAdd')->name('pageAdd');
+            Route::get('/check/{crypt}', 'pageCheck')->name('pageCheck');
+            Route::post('/update-content/{crypt}', 'pageUpdateContent')->name('pageUpdateContent');
+            Route::post('/delete/{crypt}', 'pageDelete')->name('pageDelete');
         });
 
         // // setting
@@ -780,6 +788,47 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
     });
 
+    // CommunityManagem
+    Route::controller(\Pentaforce\CommunityManagementApiController::class)->prefix('community-management')->group(function () {
+        // Registered Users
+        Route::group(['prefix' => 'register-user'], function () {
+            Route::get('/{crypt}', 'registerUser')->name('registerUser');
+            Route::post('email-st/{crypt}', 'registerUserEmailStatus')->name('registerUserEmailStatus');
+            Route::post('account-st/{crypt}', 'registerUserAccountStatus')->name('registerUserAccountStatus');
+            Route::post('login/{crypt}', 'registerUserLogin')->name('registerUserLogin');
+            Route::post('update/{crypt}', 'registerUserUpdate')->name('registerUserUpdate');
+            Route::post('delete/{crypt}', 'registerUserDelete')->name('registerUserDelete');
+            Route::post('password/{crypt}', 'registerUserPassword')->name('registerUserPassword');
+        });
+        // Subscribers
+        Route::group(['prefix' => 'subscriber'], function () {
+            Route::get('/{crypt}', 'subscriber')->name('subscriber');
+            Route::post('/delete/{crypt}', 'subscriberDelete')->name('subscriberDelete');
+        });
+
+        // follow
+        Route::group(['prefix' => 'follow'], function () {
+            Route::get('/{crypt}', 'follow')->name('follow');
+            Route::get('/unfollow/{crypt}', 'unfollow')->name('unfollow');
+        });
+
+        // subscriberMail
+        Route::group(['prefix' => 'mail'], function () {
+            Route::post('/{crypt}', 'mailSend')->name('mailSend');
+        });
+
+        // Announcement
+        Route::group(['prefix' => 'announcement'], function () {
+            Route::get('/{crypt}', 'announcement')->name('announcement');
+            Route::post('/popup-st/{crypt}', 'announcementPopupStatus')->name('announcementPopupStatus');
+            Route::post('/popup-delete/{crypt}', 'announcementPopupDelete')->name('announcementPopupDelete');
+        });
+
+    });
+
 });
 
-// php artisan make:controller Pentaforce/SiteManagementApiController
+// php artisan make:controller Pentaforce/CommunityManagementApiController
+
+
+

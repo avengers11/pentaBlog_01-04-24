@@ -20,7 +20,6 @@ class PopupController extends Controller
             ->where('user_id', Auth::id())
             ->orderBy('id', 'desc')
             ->get();
-        // also, get all the languages from db
         $information['langs'] = Language::where('user_id', Auth::id())->get();
         return view('user.popup.index', $information);
     }

@@ -76,13 +76,12 @@ class ShopApiController extends Controller
     public function charge(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
-        $lang_id = $lang->id;
+        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
         $data['shippings'] = UserShippingCharge::where('user_id', $user->id)
             // ->where('language_id', $lang_id)
             ->orderBy('id', 'DESC')
             ->get();
-        $data['lang_id'] = $lang_id;
+        $data['lang_id'] = $languageId;
 
         return response()->json($data);
     }
@@ -239,10 +238,9 @@ class ShopApiController extends Controller
     public function itemCategory(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
-        $lang_id = $lang->id;
-        $data['itemcategories'] = UserItemCategory::where('language_id', $lang_id)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
-        $data['lang_id'] = $lang_id;
+        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
+        $data['itemcategories'] = UserItemCategory::where('language_id', $languageId)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        $data['lang_id'] = $languageId;
 
         return response()->json($data);
     }
@@ -341,13 +339,12 @@ class ShopApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
-        $lang_id = $lang->id;
-        $data['categories'] = UserItemCategory::where('language_id', $lang_id)->where('user_id', $user->id)->orderBy('name', 'ASC')->get();
-        $data['itemsubcategories'] = UserItemSubCategory::where('language_id', $lang_id)->where('user_id', $user->id)
+        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
+        $data['categories'] = UserItemCategory::where('language_id', $languageId)->where('user_id', $user->id)->orderBy('name', 'ASC')->get();
+        $data['itemsubcategories'] = UserItemSubCategory::where('language_id', $languageId)->where('user_id', $user->id)
             ->with('category')
             ->orderBy('id', 'DESC')->get();
-        $data['lang_id'] = $lang_id;
+        $data['lang_id'] = $languageId;
 
         return response()->json($data);
     }
@@ -532,17 +529,16 @@ class ShopApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->first();
-        $lang_id = $lang->id;
+        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
         $data['items'] = DB::table('user_items')->where('user_items.user_id', $user->id)
             ->Join('user_item_contents', 'user_items.id', '=', 'user_item_contents.item_id')
             ->join('user_item_categories', 'user_item_contents.category_id', '=', 'user_item_categories.id')
             ->select('user_items.*', 'user_items.id AS item_id', 'user_item_contents.*', 'user_item_categories.name AS category')
             ->orderBy('user_items.id', 'DESC')
-            ->where('user_item_contents.language_id', '=', $lang_id)
-            ->where('user_item_categories.language_id', '=', $lang_id)
+            ->where('user_item_contents.language_id', '=', $languageId)
+            ->where('user_item_categories.language_id', '=', $languageId)
             ->get();
-        $data['lang_id'] = $lang_id;
+        $data['lang_id'] = $languageId;
 
         return response()->json($data);
     }

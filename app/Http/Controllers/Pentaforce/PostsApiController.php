@@ -56,7 +56,7 @@ class PostsApiController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
 
         // first, get the language info from db
-        $language = Language::where('user_id', $user->id)->first();
+        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
         $information['language'] = $language;
 
         $information['count'] = LimitCheckerHelper::currentPostCategoryCount($user->id, $language->id);//category added count of selected language
@@ -237,22 +237,6 @@ class PostsApiController extends Controller
             'serial_number' => 'required'
         ];
 
-        $thumbnailImgURL = $request->thumbnail_image;
-        $sliderImgURLs = $request->has('image') ? $request->image : [];
-
-        $thumbnailImgExt = null;
-
-        $sliderImgExts = [];
-
-        // get all the slider images extension
-        // if (!empty($sliderImgURLs)) {
-        //     foreach ($sliderImgURLs as $sliderImgURL) {
-        //         $n = strrpos($sliderImgURL, ".");
-        //         $extension = ($n === false) ? "" : substr($sliderImgURL, $n + 1);
-        //         array_push($sliderImgExts, $extension);
-        //     }
-        // }
-
         $languages = Language::where('user_id', $user->id)->get();
 
         $messages = [];
@@ -288,7 +272,6 @@ class PostsApiController extends Controller
             // $messages[$language->code . '_content.min'] = 'The content field at least have 15 characters for ' . $language->name . ' language.';
         }
         $validator = Validator::make($request->all(), $rules, $messages);
-
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
             $errorMessage = implode(', ', $errors);

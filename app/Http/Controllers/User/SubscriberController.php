@@ -102,18 +102,16 @@ class SubscriberController extends Controller
         if ($be->is_smtp == 1) {
             try {
                 //Server settings
-                $mail->isSMTP();                                            // Send using SMTP
+                $mail->isSMTP();                                 // Send using SMTP
                 $mail->Host = $be->smtp_host;                    // Set the SMTP server to send through
-                $mail->SMTPAuth = true;                                   // Enable SMTP authentication
-                $mail->Username = $be->smtp_username;                     // SMTP username
+                $mail->SMTPAuth = true;                          // Enable SMTP authentication
+                $mail->Username = $be->smtp_username;            // SMTP username
                 $mail->Password = $be->smtp_password;                               // SMTP password
                 $mail->SMTPSecure = $be->encryption;         // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
                 $mail->Port = $be->smtp_port;                                    // TCP port to connect to, use 465 for `PHPMailer::ENCRYPTION_SMTPS` above
                 $mail->addReplyTo($email);
-
                 //Recipients
                 $mail->setFrom($be->from_mail, $name);
-
                 foreach ($subscs as $key => $subsc) {
                     $mail->addAddress($subsc->email);     // Add a recipient
                 }

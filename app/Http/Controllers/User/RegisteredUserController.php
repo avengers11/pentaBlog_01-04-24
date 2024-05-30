@@ -45,7 +45,6 @@ class RegisteredUserController extends Controller
     }
     Session::flash('warning','Opps You provide Invalid Credentials !');
     return back();
-
   }
   public function updateAccountStatus(Request $request, $id)
   {

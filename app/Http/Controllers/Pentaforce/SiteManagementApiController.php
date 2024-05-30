@@ -18,6 +18,8 @@ use App\Models\User\Testimonial;
 use App\Models\User\BasicSetting;
 use App\Models\User\BookmarkPost;
 use App\Models\User\Advertisement;
+use Illuminate\Support\Facades\DB;
+use Mews\Purifier\Facades\Purifier;
 use App\Http\Controllers\Controller;
 use App\Models\User\GalleryCategory;
 use Illuminate\Support\Facades\Crypt;
@@ -43,7 +45,7 @@ class SiteManagementApiController extends Controller
             ->first();
 
         // Gallary settings
-        $languageId =   Language::where('user_id', $user->id)->pluck('id')->first();
+        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
         $information['items'] = GalleryItem::with('itemCategory')
                                     ->where('language_id', $languageId)
                                     ->where('user_id', $user->id)
@@ -90,7 +92,7 @@ class SiteManagementApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $languageId =   Language::where('user_id', $user->id)->pluck('id')->first();
+        $languageId =   Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
         $information['categories'] = GalleryCategory::where('language_id', $languageId)
             ->where('user_id', $user->id)
             ->orderBy('id', 'desc')
@@ -309,7 +311,7 @@ class SiteManagementApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $languageId =   Language::where('user_id', $user->id)->pluck('id')->first();
+        $languageId =   Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
 
         // then, get the faqs of that language from db
         $information['faqs'] = FAQ::where('language_id', $languageId)
@@ -819,5 +821,294 @@ class SiteManagementApiController extends Controller
         $data['vcards'] = UserVcard::where('user_id', $user->id)->orderBy('id', 'DESC')->get();
 
         return response()->json($data);
+    }
+    public function vCardAdd(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $vcard_limit =  LimitCheckerHelper::vcardLimitchecker($user->id);
+        $vcards = UserVcard::where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        if ($vcards->count() >= $vcard_limit) {
+            return response()->json(['success' => "maximum limit exceeded"], 200);
+        }
+
+        $profileImg = $request->file('profile_image');
+
+        $coverImg = $request->file('cover_image');
+        $allowedExts = array('jpg', 'png', 'jpeg');
+
+        $rules = [
+            'vcard_name' => 'required|max:255',
+            'template' => 'required',
+            'direction' => 'required',
+            'name' => 'nullable|max:255',
+            'occupation' => 'nullable|max:255',
+            'profile_image' => [
+                'required',
+                function ($attribute, $value, $fail) use ($profileImg, $allowedExts) {
+                    if (!empty($profileImg)) {
+                        $ext = $profileImg->getClientOriginalExtension();
+                        if (!in_array($ext, $allowedExts)) {
+                            return $fail("Only png, jpg, jpeg image is allowed");
+                        }
+                        $size = $profileImg->getSize();
+                        if ($size > 200000) {
+                            return $fail("Image size cannot be greater than 200 KB");
+                        }
+                    }
+                },
+            ],
+            'cover_image' => [
+                function ($attribute, $value, $fail) use ($coverImg, $allowedExts) {
+                    if (!empty($coverImg)) {
+                        $ext = $coverImg->getClientOriginalExtension();
+                        if (!in_array($ext, $allowedExts)) {
+                            return $fail("Only png, jpg, jpeg image is allowed");
+                        }
+                    }
+                },
+            ],
+            'icons.*' => 'required',
+            'colors.*' => 'required',
+            'labels.*' => 'required',
+            'values.*' => 'required',
+        ];
+
+        $messages = [
+            'icons.*.required' => 'The Icon field cannot be empty',
+            'colors.*.required' => 'The Color field cannot be empty',
+            'labels.*.required' => 'The Label field cannot be empty',
+            'values.*.required' => 'The Value field cannot be empty'
+        ];
+
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $validator->getMessageBag()->add('error', 'true');
+            return response()->json($validator->errors());
+        }
+
+        $vcard = new UserVcard();
+        $vcard->user_id = $user->id;
+        $vcard->vcard_name = $request->vcard_name;
+        $vcard->direction = $request->direction;
+        $vcard->template = $request->template;
+        $vcard->profile_image = $request->profile_image;
+        $vcard->cover_image = $request->cover_image;
+        $vcard->name = $request->name;
+        $vcard->occupation = $request->occupation;
+        $vcard->company = $request->company;
+        $vcard->email = $request->email;
+        $vcard->phone = $request->phone;
+        $vcard->address = $request->address;
+        $vcard->website_url = $request->website_url;
+        $vcard->introduction = $request->introduction;
+        // language keywords
+        $data = file_get_contents(resource_path('lang/') . 'vcard.json');
+        $vcard->keywords = $data;
+        $vcard->preferences = '["Call","Whatsapp","Mail","Add to Contact","Share vCard","Information","About Us","Video","Services","Projects","Testimonials","Enquiry Form"]';
+        $infoArr = [];
+        $labels = $request->labels ? $request->labels : [];
+        $values = $request->values ? $request->values : [];
+        $icons = $request->icons ? $request->icons : [];
+        $colors = $request->colors ? $request->colors : [];
+        $links = $request->links ? $request->links : [];
+
+        foreach ($labels as $key => $label) {
+            $info = [
+                'icon' => $icons["$key"],
+                'color' => $colors["$key"],
+                'label' => $labels["$key"],
+                'link' => in_array($key, $links) ? 1 : 0,
+                'value' => $values["$key"]
+            ];
+            $infoArr[] = $info;
+        }
+
+        $vcard->information = json_encode($infoArr);
+        $vcard->save();
+
+        return response()->json(['success' => "Vcard added successfully"], 200);
+    }
+    public function vCardUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $vcards = UserVcard::where('user_id', $user->id)->where('id', $request->id)->first();
+        return response()->json($vcards);
+    }
+    public function vCardUpdateSubmit(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $rules = [
+            'vcard_name' => 'required|max:255',
+            'template' => 'required',
+            'direction' => 'required',
+            'name' => 'nullable|max:255',
+            'occupation' => 'nullable|max:255',
+            'icons.*' => 'required',
+            'colors.*' => 'required',
+            'labels.*' => 'required',
+            'values.*' => 'required',
+        ];
+
+        $messages = [
+            'icons.*.required' => 'The Icon field cannot be empty',
+            'colors.*.required' => 'The Color field cannot be empty',
+            'labels.*.required' => 'The Label field cannot be empty',
+            'values.*.required' => 'The Value field cannot be empty'
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        $vcard = UserVcard::where('user_id', $user->id)->where('id', $request->id)->first();
+        $vcard->user_id = $user->id;
+        $vcard->vcard_name = $request->vcard_name;
+        $vcard->direction = $request->direction;
+        $vcard->template = $request->template;
+        // profile_image
+        if($request->profile_image != null){
+            $vcard->profile_image = $request->profile_image;
+            if ($vcard->profile_image != null) {
+                // Storage::delete($user->profile_image);
+            }
+        }
+        // cover_image
+        if($request->cover_image != null){
+            $vcard->cover_image = $request->cover_image;
+            if ($vcard->cover_image != null) {
+                // Storage::delete($user->cover_image);
+            }
+        }
+        $vcard->name = $request->name;
+        $vcard->occupation = $request->occupation;
+        $vcard->company = $request->company;
+        $vcard->email = $request->email;
+        $vcard->phone = $request->phone;
+        $vcard->address = $request->address;
+        $vcard->website_url = $request->website_url;
+        $vcard->introduction = $request->introduction;
+        // language keywords
+        $infoArr = [];
+        $labels = $request->labels ? $request->labels : [];
+        $values = $request->values ? $request->values : [];
+        $icons = $request->icons ? $request->icons : [];
+        $colors = $request->colors ? $request->colors : [];
+        $links = $request->links ? $request->links : [];
+
+        foreach ($labels as $key => $label) {
+            $info = [
+                'icon' => $icons["$key"],
+                'color' => $colors["$key"],
+                'label' => $labels["$key"],
+                'link' => in_array($key, $links) ? 1 : 0,
+                'value' => $values["$key"]
+            ];
+            $infoArr[] = $info;
+        }
+
+        $vcard->information = json_encode($infoArr);
+        $vcard->save();
+
+        return response()->json(['success' => "Vcard updated successfully"], 200);
+    }
+
+    // vCardDelete
+    public function vCardDelete(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $vcards = UserVcard::where('user_id', $user->id)->where('id', $request->id)->first();
+        if ($vcards->profile_image != null) {
+            // Storage::delete($vcards->profile_image);
+        }
+        // cover_image
+        if ($vcards->cover_image != null) {
+            // Storage::delete($user->cover_image);
+        }
+        $vcards->delete();
+
+        return response()->json(['success' => "Vcard delete successfully"], 200);
+    }
+
+
+
+    /*
+    ==============================
+    Pages
+    ==============================
+    */
+    public function page($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $data['languages'] = Language::query()->where('user_id', $user->id)->get();
+        $languageId = Language::where('is_default', 1)->where('user_id', '=', $user->id)->pluck('id')->first();
+        $data['pages'] = DB::table('user_pages')
+            ->join('user_page_contents', 'user_pages.id', '=', 'user_page_contents.page_id')
+            ->where('user_page_contents.language_id', '=', $languageId)
+            ->where('user_page_contents.user_id', '=', $user->id)
+            ->orderByDesc('user_pages.id')
+            ->get();
+
+        return $data;
+    }
+    public function pageAdd(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $rules = ['status' => 'required'];
+        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
+
+        $messages = [];
+        $rules['title'] = 'required|max:255';
+        $messages['title.required'] = 'The title field is required for ' . $language->name . ' language.';
+        $messages['title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        $page = new Page();
+        $page->status = $request->status;
+        $page->user_id = $user->id;
+        $page->save();
+
+        $pageContent = new PageContent();
+        $pageContent->language_id = $language->id;
+        $pageContent->user_id = $user->id;
+        $pageContent->page_id = $page->id;
+        $pageContent->title = $request['title'];
+        $pageContent->slug = make_slug($request['title']);
+        $pageContent->content = "You can write anything here!";
+        $pageContent->meta_keywords = $request['meta_keywords'];
+        $pageContent->meta_description = $request['meta_description'];
+        $pageContent->save();
+
+        return response()->json(['success' => "New page added successfully!", 'id' => $pageContent->id], 200);
+    }
+    public function pageCheck(Request $request)
+    {
+        $content = PageContent::where('id', $request->id)->first();
+        return response()->json($content, 200);
+    }
+    public function pageUpdateContent(Request $request)
+    {
+        $content = PageContent::where('id', $request->id)->first();
+        $content -> content = $request->textarea;
+        $content -> save();
+        return response()->json(['success' => 'Your content successfully updated!'], 200);
+    }
+    public function pageDelete(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        Page::query()->where('id', $request->id)->where('user_id', $user->id)->delete();
+        return response()->json(['success' => 'Page deleted successfully!'], 200);
     }
 }

@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Crypt;
 use Session;
 use App\Models\User\BasicSetting;
+use App\Models\Customer;
 
 class DashboardApiController extends Controller
 {
