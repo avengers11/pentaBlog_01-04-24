@@ -381,17 +381,12 @@ class BasicSettingsController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
 
         // footer
-        $lang = Language::where([
-            ['code', $request->language],
-            ['user_id', $user->id]
-        ])->first();
-        $data['text'] = FooterText::where('language_id', $lang->id)->where('user_id', $user->id)->first();
+        $langId = Language::where('user_id', $user->id)->where('is_default', 1)->firstOrFail()->id;
 
-        // footer quick links
-        $language = Language::where('code', $request->language)
-                    ->where('user_id', $user->id)
-                    ->firstOrFail();
-        $data['links'] = FooterQuickLink::where('language_id', $language->id)
+        $data['text'] = FooterText::where('language_id', $langId)->where('user_id', $user->id)->first();
+
+        // footer quick link
+        $data['links'] = FooterQuickLink::where('language_id', $langId)
                         ->where('user_id', $user->id)
                         ->orderBy('id', 'desc')
                         ->get();
@@ -403,8 +398,8 @@ class BasicSettingsController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $lang = Language::where('code', $request->language)->where('user_id', $user->id)->firstOrFail();
-        $data = FooterText::where('language_id', $lang->id)->where('user_id', $user->id)->first();
+        $langId = Language::where('user_id', $user->id)->where('is_default', 1)->firstOrFail()->id;
+        $data = FooterText::where('language_id', $langId)->where('user_id', $user->id)->first();
         // $theme = BasicSetting::where('user_id', $user->id)->first()->theme_version;
 
         if(is_null($data))
@@ -434,7 +429,7 @@ class BasicSettingsController extends Controller
             }
         }
 
-        $data->language_id =  $lang->id;
+        $data->language_id =  $langId;
         $data->copyright_text =  clean($request->copyright_text);
         $data->user_id = $user->id;
         $data->about_company = $request->about_company;
