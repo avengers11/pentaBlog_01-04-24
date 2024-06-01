@@ -7,18 +7,19 @@ use Validator;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Customer;
+use App\Models\User\Popup;
+use App\Models\BasicSetting;
 use Illuminate\Http\Request;
+use App\Models\BasicExtended;
 use App\Models\User\Follower;
 use App\Models\User\Language;
 use App\Models\User\Subscriber;
+use PHPMailer\PHPMailer\PHPMailer;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
-use App\Models\BasicSetting;
-use App\Models\BasicExtended;
-use PHPMailer\PHPMailer\PHPMailer;
-use App\Models\User\Popup;
+use Illuminate\Support\Facades\Storage;
 
 class CommunityManagementApiController extends Controller
 {
@@ -268,16 +269,14 @@ class CommunityManagementApiController extends Controller
 
     /*
     ==============================
-    announcement announcementPopupStatus
+    announcementPopupStatus
     ==============================
     */
     public function announcement(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $language = Language::where('user_id', $user->id)->where('is_default', 1)->firstOrFail()->id;
-        $information['popups'] = Popup::where('language_id', $language)
-            ->where('user_id', $user->id)
+        $information['popups'] = Popup::where('user_id', $user->id)
             ->orderBy('id', 'desc')
             ->get();
         $information['langs'] = Language::where('user_id', $user->id)->get();
@@ -305,5 +304,105 @@ class CommunityManagementApiController extends Controller
         $popup->delete();
         return response()->json(['success' => "Popup deleted successfully!"], 200);
     }
+    public function announcementPopupAdd(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
 
+        $validator = Validator::make($request->all(),
+            [
+                'user_language_id' => 'required',
+                'type' => 'required',
+                'name' => 'required|max:255',
+                'background_color' => 'required_if:type,2|required_if:type,3|required_if:type,7',
+                'background_color_opacity' => 'required_if:type,2|required_if:type,3|numeric|between:0,1',
+                'title' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7|max:255',
+                'text' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7',
+                'button_text' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7|max:255',
+                'button_color' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7',
+                'button_url' => 'required_if:type,2|required_if:type,4|required_if:type,6|required_if:type,7',
+                'end_date' => 'required_if:type,6|required_if:type,7|date',
+                'end_time' => 'required_if:type,6|required_if:type,7',
+                'delay' => 'required|numeric',
+                'serial_number' => 'required|numeric'
+            ],[
+                'language_id.required' => 'The language field is required.'
+            ]
+        );
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        // get image extension
+        Popup::create($request->except('language_id','image', 'end_date', 'end_time','user_id') + [
+                'image' => $request->image,
+                'language_id' => $request->user_language_id,
+                'end_date' => $request->has('end_date') ? Carbon::parse($request['end_date']) : null,
+                'end_time' => $request->has('end_time') ? date('h:i', strtotime($request['end_time'])) : null,
+                'user_id' => $user->id
+            ]);
+
+        return response()->json(['success' => "New popup added successfully!"], 200);
+    }
+    public function announcementPopupEdit(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $information['popup'] = Popup::where('id', $request->id)->where('user_id', $user->id)->first();
+        $information['langs'] = Language::where('user_id', $user->id)->get();
+
+        return response()->json($information);
+    }
+    public function announcementPopupEditSubmit(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $validator = Validator::make($request->all(),
+            [
+                'user_language_id' => 'required',
+                'type' => 'required',
+                'name' => 'required|max:255',
+                'background_color' => 'required_if:type,2|required_if:type,3|required_if:type,7',
+                'background_color_opacity' => 'required_if:type,2|required_if:type,3|numeric|between:0,1',
+                'title' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7|max:255',
+                'text' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7',
+                'button_text' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7|max:255',
+                'button_color' => 'required_if:type,2|required_if:type,3|required_if:type,4|required_if:type,5|required_if:type,6|required_if:type,7',
+                'button_url' => 'required_if:type,2|required_if:type,4|required_if:type,6|required_if:type,7',
+                'end_date' => 'required_if:type,6|required_if:type,7|date',
+                'end_time' => 'required_if:type,6|required_if:type,7',
+                'delay' => 'required|numeric',
+                'serial_number' => 'required|numeric'
+            ],[
+                'language_id.required' => 'The language field is required.'
+            ]
+        );
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+        $popup = Popup::where('id', $request->id)->where('user_id', $user->id)->first();
+        if($request->photo != null){
+            $imageName = $request->image;
+            if ($popup->photo != null) {
+                Storage::delete($popup->photo);
+            }
+        }else{
+            $imageName = $popup->image;
+        }
+
+        // get image extension
+        $popup->update($request->except('image', 'end_date', 'end_time') + [
+            'image' => $imageName,
+            'end_date' => $request->has('end_date') ? Carbon::parse($request['end_date']) : null,
+            'end_time' => $request->has('end_time') ? date('h:i', strtotime($request['end_time'])) : null
+        ]);
+
+        return response()->json(['success' => "New popup updated successfully!"], 200);
+    }
 }

@@ -531,6 +531,11 @@ Route::domain($domain)->group(function () {
 Route::group(['prefix' => 'pentaforce'], function () {
 
     //dashboard
+    Route::group(['prefix' => 'init'], function () {
+        Route::get('language/{crypt}', 'Pentaforce\InitApiController@language');
+    });
+
+    //dashboard
     Route::group(['prefix' => 'dashboard'], function () {
         Route::get('/{crypt}', 'Pentaforce\DashboardApiController@getDashboardData');
         Route::get('user/{crypt}', 'Pentaforce\DashboardApiController@getUserData');
@@ -822,13 +827,17 @@ Route::group(['prefix' => 'pentaforce'], function () {
             Route::get('/{crypt}', 'announcement')->name('announcement');
             Route::post('/popup-st/{crypt}', 'announcementPopupStatus')->name('announcementPopupStatus');
             Route::post('/popup-delete/{crypt}', 'announcementPopupDelete')->name('announcementPopupDelete');
+
+            // add
+            Route::post('popup-add/{crypt}', 'announcementPopupAdd')->name('announcementPopupAdd');
+            Route::post('popup-edit/{crypt}', 'announcementPopupEdit')->name('announcementPopupEdit');
+            Route::post('popup-edit-submit/{crypt}', 'announcementPopupEditSubmit')->name('announcementPopupEditSubmit');
         });
 
     });
-
 });
 
-// php artisan make:controller Pentaforce/CommunityManagementApiController
+// php artisan make:controller Pentaforce/InitApiController
 
 
 

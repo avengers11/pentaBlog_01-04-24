@@ -237,40 +237,30 @@ class PostsApiController extends Controller
             'serial_number' => 'required'
         ];
 
-        $languages = Language::where('user_id', $user->id)->get();
-
+        $language = Language::find($request->language);
         $messages = [];
-
-        foreach ($languages as $language) {
-            $slug = make_slug($request[$language->code . '_title']);
-            $rules[$language->code . '_title'] = [
-                'required',
-                'max:255',
-                function ($attribute, $value, $fail) use ($slug, $language, $user) {
-                    $pcs = PostContent::where('user_id', $user->id)->get();
-                    foreach ($pcs as $key => $pc) {
-                        if (strtolower($slug) == strtolower($pc->slug)) {
-                            $fail('The title field must be unique for ' . $language->name . ' language.');
-                        }
+        $slug = make_slug('title');
+        $rules['title'] = [
+            'required',
+            'max:255',
+            function ($attribute, $value, $fail) use ($slug, $language, $user) {
+                $pcs = PostContent::where('user_id', $user->id)->get();
+                foreach ($pcs as $key => $pc) {
+                    if (strtolower($slug) == strtolower($pc->slug)) {
+                        $fail('The title field must be unique for ' . $language->name . ' language.');
                     }
                 }
-            ];
-            $rules[$language->code . '_category'] = 'required';
-            $rules[$language->code . '_author'] = 'required';
-            // $rules[$language->code . '_content'] = 'required|min:15';
+            }
+        ];
+        $rules["category"] = 'required';
+        $rules["author"] = 'required';
 
-            $messages[$language->code . '_title.required'] = 'The title field is required for ' . $language->name . ' language.';
+        $messages['title.required'] = 'The title field is required for ' . $language->name . ' language.';
+        $messages['title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
+        $messages['category.required'] = 'The category field is required for ' . $language->name . ' language.';
+        $messages['author.required'] = 'The author field is required for ' . $language->name . ' language.';
 
-            $messages[$language->code . '_title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
 
-            $messages[$language->code . '_category.required'] = 'The category field is required for ' . $language->name . ' language.';
-
-            $messages[$language->code . '_author.required'] = 'The author field is required for ' . $language->name . ' language.';
-
-            // $messages[$language->code . '_content.required'] = 'The content field is required for ' . $language->name . ' language.';
-
-            // $messages[$language->code . '_content.min'] = 'The content field at least have 15 characters for ' . $language->name . ' language.';
-        }
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
@@ -284,20 +274,18 @@ class PostsApiController extends Controller
         $post->serial_number = $request->serial_number;
         $post->user_id = $user->id;
         $post->save();
-        foreach ($languages as $language) {
-            $postContent = new PostContent();
-            $postContent->language_id = $language->id;
-            $postContent->user_id = $user->id;
-            $postContent->post_category_id = $request[$language->code . '_category'];
-            $postContent->post_id = $post->id;
-            $postContent->title = $request[$language->code . '_title'];
-            $postContent->slug = make_slug($request[$language->code . '_title']);
-            $postContent->author = $request[$language->code . '_author'];
-            $postContent->content = Purifier::clean($request[$language->code . '_content']);
-            $postContent->meta_keywords = $request[$language->code . '_meta_keywords'];
-            $postContent->meta_description = $request[$language->code . '_meta_description'];
-            $postContent->save();
-        }
+        $postContent = new PostContent();
+        $postContent->language_id = $language->id;
+        $postContent->user_id = $user->id;
+        $postContent->post_category_id = $request['category'];
+        $postContent->post_id = $post->id;
+        $postContent->title = $request['title'];
+        $postContent->slug = make_slug($request['title']);
+        $postContent->author = $request['author'];
+        $postContent->content = Purifier::clean($request['content']);
+        $postContent->meta_keywords = $request['meta_keywords'];
+        $postContent->meta_description = $request['meta_description'];
+        $postContent->save();
 
         return response()->json(['success' => 'Post added successfully!', 'id' => $post->id], 200);
     }
