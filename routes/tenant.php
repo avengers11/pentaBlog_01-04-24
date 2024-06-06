@@ -702,7 +702,12 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
         // post
         Route::get('/post/{crypt}', 'post')->name('post');
+        Route::get('/post-create/{crypt}', 'postCreate')->name('postCreate');
         Route::post('/post-add/{crypt}', 'postAdd')->name('postAdd');
+
+        Route::get('/post-edit/{crypt}', 'postEdit')->name('postEdit');
+        Route::post('/post-update/{crypt}', 'postUpdate')->name('postUpdate');
+
         Route::post('/post-update-content', 'postUpdateContent')->name('postUpdateContent');
         Route::get('/post-check', 'postCheck')->name('postCheck');
         Route::post('/post-delete/{crypt}', 'postDelete')->name('postDelete');

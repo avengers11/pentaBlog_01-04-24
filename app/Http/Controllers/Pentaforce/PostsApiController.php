@@ -209,10 +209,8 @@ class PostsApiController extends Controller
         $information['featuredCount'] = LimitCheckerHelper::currentFeaturedPostsCount($user->id);//count of current featured posts
         $information['featuredLimit'] = LimitCheckerHelper::featurePostsLimit($user->id);
 
-        $languageId =   Language::where('user_id', $user->id)->pluck('id')->first();;
         $information['posts'] = DB::table('posts')
             ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
-            ->where('post_contents.language_id', '=', $languageId)
             ->where('post_contents.user_id', '=', $user->id)
             ->orderByDesc('posts.id')
             ->get();
@@ -221,6 +219,19 @@ class PostsApiController extends Controller
         $information['category'] = PostCategory::where('user_id', $user->id)->get();
 
         return response()->json($information);
+    }
+    public function postCreate($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $languages = Language::where('user_id', $user->id)
+        ->orderByRaw('id = ? DESC', [$user->default_language_id])
+        ->latest()
+        ->get();
+        $category = PostCategory::where('user_id', $user->id)->get();
+
+
+        return response()->json(['languages' => $languages, "category" => $category]);
     }
     public function postAdd(Request $request, $crypt)
     {
@@ -239,7 +250,7 @@ class PostsApiController extends Controller
 
         $language = Language::find($request->language);
         $messages = [];
-        $slug = make_slug('title');
+        $slug = make_slug($request['title']);
         $rules['title'] = [
             'required',
             'max:255',
@@ -289,7 +300,79 @@ class PostsApiController extends Controller
 
         return response()->json(['success' => 'Post added successfully!', 'id' => $post->id], 200);
     }
+    public function postEdit($crypt, Request $request)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
 
+        $information['languages'] = Language::where('user_id', $user->id)
+        ->orderByRaw('id = ? DESC', [$user->default_language_id])
+        ->latest()
+        ->get();
+        $information['category'] = PostCategory::where('user_id', $user->id)->get();
+        $information['posts'] = DB::table('posts')
+        ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
+        ->where('post_contents.user_id', '=', $user->id)
+        ->where('posts.id', '=', $request->id)
+        ->first();
+
+        return response()->json($information);
+    }
+    public function postUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $rules = [
+            'serial_number' => 'required'
+        ];
+        $messages = [];
+        $rules['title'] = 'required';
+        $rules["category"] = 'required';
+        $rules["author"] = 'required';
+        $messages['title.required'] = 'The title field is required!';
+        $messages['title.max'] = 'The title field cannot contain more than 255 characters!';
+        $messages['category.required'] = 'The category field is required!';
+        $messages['author.required'] = 'The author field is required!';
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+
+
+
+        $post = Post::where('user_id', $user->id)->where('id', $request->id)->first();
+        if($request->thumbnail_image != null){
+            if ($post->thumbnail_image != null) {
+                Storage::delete($post->thumbnail_image);
+            }
+            $post->thumbnail_image = $request->thumbnail_image;
+        }
+
+        if($request->slider_images != null){
+            foreach (json_decode($request->slider_images) as $value) {
+                Storage::delete($value);
+            }
+            $post->slider_images = json_encode($request->slider_images);
+        }
+
+        $post->serial_number = $request->serial_number;
+        $post->save();
+
+        $postContent = PostContent::where("post_id", $post->id)->first();
+        $postContent->post_category_id = $request['category'];
+        $postContent->title = $request['title'];
+        $postContent->slug = make_slug($request['title']);
+        $postContent->author = $request['author'];
+        $postContent->content = Purifier::clean($request['content']);
+        $postContent->meta_keywords = $request['meta_keywords'];
+        $postContent->meta_description = $request['meta_description'];
+        $postContent->save();
+
+        return response()->json(['success' => 'Post added successfully!', 'id' => $post->id], 200);
+    }
     // postCheck
     public function postCheck(Request $request)
     {
