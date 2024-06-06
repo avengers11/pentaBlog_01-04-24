@@ -239,6 +239,7 @@ class ShopApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
         $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
+        $data["langs"] = Language::where('user_id', $user->id)->get();
         $data['itemcategories'] = UserItemCategory::where('language_id', $languageId)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
         $data['lang_id'] = $languageId;
 
@@ -344,6 +345,7 @@ class ShopApiController extends Controller
         $data['itemsubcategories'] = UserItemSubCategory::where('language_id', $languageId)->where('user_id', $user->id)
             ->with('category')
             ->orderBy('id', 'DESC')->get();
+        $data["langs"] = Language::where('user_id', $user->id)->get();
         $data['lang_id'] = $languageId;
 
         return response()->json($data);
@@ -427,41 +429,12 @@ class ShopApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $languages = Language::where('user_id', $user->id)->get();
-
         $messages = [];
         $rules = [];
-        $allowedExtensions = array('jpg', 'jpeg', 'png', 'svg');
-        $sliderImgExts = [];
-
-        $rules['image'] = [
-            'required',
-            function ($attribute, $value, $fail) use ($allowedExtensions, $sliderImgExts) {
-                if (!empty($sliderImgExts)) {
-                    foreach ($sliderImgExts as $sliderImgExt) {
-                        if (!in_array($sliderImgExt, $allowedExtensions)) {
-                            $fail('Only .jpg, .jpeg, .png and .svg file is allowed for slider image.');
-                            break;
-                        }
-                    }
-                }
-            }
-        ];
-        $messages['image.required'] = 'The slider Image is required.';
+        $rules['image'] = 'required';
         $rules['status'] = 'required';
         $rules['current_price'] = 'required|numeric';
         $rules['previous_price'] = 'nullable|numeric';
-
-        foreach ($languages as $language) {
-            $rules[$language->code . '_title'] = 'required';
-            $rules[$language->code . '_category'] = 'required';
-            $rules[$language->code . '_subcategory'] = 'required';
-            $messages[$language->code . '_category.required'] = 'The Category field is required for ' . $language->name . ' language.';
-            $messages[$language->code . '_subcategory.required'] = 'The Subcategory field is required for ' . $language->name . ' language.';
-            $messages[$language->code . '_title.required'] = 'The Title field is required for ' . $language->name . ' language.';
-            $allowedExts = array('zip');
-        }
-
 
         // if product type is 'physical'
         if ($request->type == 'physical') {
@@ -482,8 +455,9 @@ class ShopApiController extends Controller
             }
         }
 
+        $language = Language::find($request->user_language_id);
+
         $item = new UserItem();
-        // set a name for the thumbnail image and store it to local storage
         $thumbnailImgName = $request->thumbnail;
         $item->user_id = $user->id;
         $item->stock = $request->stock;
@@ -502,22 +476,20 @@ class ShopApiController extends Controller
                 'image' => $value,
             ]);
         }
-        // store varations as json
-        foreach ($languages as $language) {
-            $adContent = new UserItemContent();
-            $adContent->item_id = $item->id;
-            $adContent->language_id = $language->id;
-            $adContent->category_id = $request[$language->code . '_category'];
-            $adContent->subcategory_id = $request[$language->code . '_subcategory'];
-            $adContent->title = $request[$language->code . '_title'];
-            $adContent->slug = make_slug($request[$language->code . '_title']);
-            $adContent->summary = $request[$language->code . '_summary'];
-            $adContent->tags = $request[$language->code . '_tags'];
-            $adContent->description = Purifier::clean($request[$language->code . '_description']);
-            $adContent->meta_keywords = $request[$language->code . '_keyword'];
-            $adContent->meta_description = $request[$language->code . '_meta_keyword'];
-            $adContent->save();
-        }
+
+        $adContent = new UserItemContent();
+        $adContent->item_id = $item->id;
+        $adContent->language_id = $language->id;
+        $adContent->category_id = $request->category;
+        $adContent->subcategory_id = $request->subcategory;
+        $adContent->title = $request->title;
+        $adContent->slug = make_slug($request->sku);
+        $adContent->summary = $request->summary;
+        $adContent->tags = $request->tags;
+        $adContent->description = Purifier::clean($request->description);
+        $adContent->meta_keywords = $request->keyword;
+        $adContent->meta_description = $request->keyword;
+        $adContent->save();
 
         return response()->json(['success' => 'Item added successfully!'], 200);
     }
@@ -535,15 +507,15 @@ class ShopApiController extends Controller
             ->join('user_item_categories', 'user_item_contents.category_id', '=', 'user_item_categories.id')
             ->select('user_items.*', 'user_items.id AS item_id', 'user_item_contents.*', 'user_item_categories.name AS category')
             ->orderBy('user_items.id', 'DESC')
-            ->where('user_item_contents.language_id', '=', $languageId)
-            ->where('user_item_categories.language_id', '=', $languageId)
             ->get();
         $data['lang_id'] = $languageId;
 
         return response()->json($data);
     }
-    public function itemDigitalProductSingleShow(Request $request)
+    public function itemDigitalProductSingleShow(Request $request, $crypt)
     {
+        $user = User::find(Crypt::decrypt($crypt));
+
         $data['items'] = DB::table('user_items')
             ->Join('user_item_contents', 'user_items.id', '=', 'user_item_contents.item_id')
             ->join('user_item_categories', 'user_item_contents.category_id', '=', 'user_item_categories.id')
@@ -551,6 +523,8 @@ class ShopApiController extends Controller
             ->where('user_items.id', $request->products_id)
             ->orderBy('user_items.id', 'DESC')
             ->first();
+        $data['itemcategories'] = UserItemCategory::where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        $data['galleries'] = UserItemImage::where('item_id', $data['items']->item_id)->orderBy('id', 'DESC')->get();
 
         return response()->json($data);
     }
@@ -558,39 +532,11 @@ class ShopApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $languages = Language::where('user_id', $user->id)->get();
         $messages = [];
         $rules = [];
-        $allowedExtensions = array('jpg', 'jpeg', 'png', 'svg');
-        $sliderImgExts = [];
-
-        $rules['image'] = [
-            'required',
-            function ($attribute, $value, $fail) use ($allowedExtensions, $sliderImgExts) {
-                if (!empty($sliderImgExts)) {
-                    foreach ($sliderImgExts as $sliderImgExt) {
-                        if (!in_array($sliderImgExt, $allowedExtensions)) {
-                            $fail('Only .jpg, .jpeg, .png and .svg file is allowed for slider image.');
-                            break;
-                        }
-                    }
-                }
-            }
-        ];
-        $messages['image.required'] = 'The slider Image is required.';
         $rules['status'] = 'required';
         $rules['current_price'] = 'required|numeric';
         $rules['previous_price'] = 'nullable|numeric';
-
-        foreach ($languages as $language) {
-            $rules[$language->code . '_title'] = 'required';
-            $rules[$language->code . '_category'] = 'required';
-            $rules[$language->code . '_subcategory'] = 'required';
-            $messages[$language->code . '_category.required'] = 'The Category field is required for ' . $language->name . ' language.';
-            $messages[$language->code . '_subcategory.required'] = 'The Subcategory field is required for ' . $language->name . ' language.';
-            $messages[$language->code . '_title.required'] = 'The Title field is required for ' . $language->name . ' language.';
-        }
-
 
         // if product type is 'physical'
         if ($request->type == 'physical') {
@@ -612,15 +558,15 @@ class ShopApiController extends Controller
         }
 
         $item = UserItem::where('id', $request->item_id)->where('user_id', $user->id)->first();
-        // set a name for the thumbnail image and store it to local storage
-        $thumbnailImgName = $request->thumbnail;
         $item->user_id = $user->id;
         $item->stock = $request->stock;
         $item->sku = $request->sku;
+
         if($request->thumbnail != null){
             Storage::delete($item->thumbnail);
-            $item->thumbnail = $thumbnailImgName;
+            $item->thumbnail = $request->thumbnail;
         }
+
         $item->status = $request->status;
         $item->current_price = $request->current_price;
         $item->previous_price = $request->previous_price ?? 0.00;
@@ -629,39 +575,35 @@ class ShopApiController extends Controller
         $item->download_link = $request->download_link;
         $item->save();
 
-        // delete all gallary img
-        $allGalleryImg = UserItemImage::where('item_id', $item->id)->get();
-        foreach ($allGalleryImg as $value) {
-            Storage::url($value);
-            $value->delete();
-        }
-
-        // add all gallary img
-        foreach ($request->image as $value) {
-            UserItemImage::create([
-                'item_id' => $item->id,
-                'image' => $value,
-            ]);
+        if($request->image != null){
+            // delete all gallary img
+            $allGalleryImg = UserItemImage::where('item_id', $item->id)->get();
+            foreach ($allGalleryImg as $value) {
+                Storage::url($value);
+                $value->delete();
+            }
+            // add all gallary img
+            foreach ($request->image as $value) {
+                UserItemImage::create([
+                    'item_id' => $item->id,
+                    'image' => $value,
+                ]);
+            }
         }
 
         // store varations as json
-        foreach ($languages as $language) {
-            $adContent = UserItemContent::where('item_id', $request->item_id)
-                ->where('language_id', $language->id)
-                ->first();
-            $adContent->item_id = $item->id;
-            $adContent->language_id = $language->id;
-            $adContent->category_id = $request[$language->code . '_category'];
-            $adContent->subcategory_id = $request[$language->code . '_subcategory'];
-            $adContent->title = $request[$language->code . '_title'];
-            $adContent->slug = make_slug($request[$language->code . '_title']);
-            $adContent->summary = $request[$language->code . '_summary'];
-            $adContent->tags = $request[$language->code . '_tags'];
-            $adContent->description = Purifier::clean($request[$language->code . '_description']);
-            $adContent->meta_keywords = $request[$language->code . '_keyword'];
-            $adContent->meta_description = $request[$language->code . '_meta_keyword'];
-            $adContent->save();
-        }
+        $adContent = UserItemContent::where('item_id', $request->item_id)->first();
+        $adContent->item_id = $item->id;
+        $adContent->category_id = $request->category;
+        $adContent->subcategory_id = $request->subcategory;
+        $adContent->title = $request->title;
+        $adContent->slug = make_slug($request->sku);
+        $adContent->summary = $request->summary;
+        $adContent->tags = $request->tags;
+        $adContent->description = Purifier::clean($request->description);
+        $adContent->meta_keywords = $request->keyword;
+        $adContent->meta_description = $request->keyword;
+        $adContent->save();
 
         return response()->json(['success' => 'Item update successfully!'], 200);
     }

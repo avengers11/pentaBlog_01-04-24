@@ -27,8 +27,14 @@ class TestimonialContent extends Model
 
     public function testimonial()
     {
-        return $this->belongsTo('App\Models\User\Testimonial','testimonial_id')->where('user_id',Auth::id());
+        return $this->belongsTo('App\Models\User\Testimonial','testimonial_id')->where('user_id', Auth::id());
     }
+
+    public function testimonialUser()
+    {
+        return $this->belongsTo('App\Models\User\Testimonial', 'testimonial_id');
+    }
+
 
     public function testimonialContentLang()
     {

@@ -15,7 +15,7 @@ class SliderImageController extends Controller
 {
     public function index(Request $request)
     {
-        // then, get the slider version info of that language from db
+        // then, get the slider version info of that language from db 
         $information['sliders'] = SliderImage::where('user_id',Auth::id())
                                               ->orderBy('id', 'desc')
                                               ->get();

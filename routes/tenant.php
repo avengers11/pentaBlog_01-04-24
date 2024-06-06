@@ -594,7 +594,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::post('/item-product-add/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductAdd');
         Route::get('/item-product-subCategroy/{id}', 'Pentaforce\ShopApiController@itemDigitalProductsubCategroy');
         Route::post('/item-product-update/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
-        Route::get('/item-product-single-show', 'Pentaforce\ShopApiController@itemDigitalProductSingleShow');
+        Route::get('/item-product-single-show/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductSingleShow');
         Route::post('/item-product-delete/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
 
 
@@ -835,9 +835,53 @@ Route::group(['prefix' => 'pentaforce'], function () {
         });
 
     });
+
+
+    // About Site
+    Route::controller(\Pentaforce\AboutSiteController::class)->prefix('about-site')->group(function () {
+
+        // slider
+        Route::group(['prefix' => 'slider'], function () {
+            Route::get('/{crypt}', 'slider');
+            Route::post('add/{crypt}', 'addSlider');
+            Route::post('update/{crypt}', 'updateSlider');
+            Route::post('delete/{crypt}', 'deleteSlider');
+        });
+
+        // information
+        Route::group(['prefix' => 'information'], function () {
+            Route::get('/{crypt}', 'information');
+            Route::post('update/{crypt}', 'updateInformation');
+        });
+
+        // social
+        Route::group(['prefix' => 'social'], function () {
+            Route::get('/{crypt}', 'social');
+            Route::post('add/{crypt}', 'addSocial');
+            Route::post('update/{crypt}', 'updateSocial');
+            Route::post('delete/{crypt}', 'deleteSocial');
+        });
+
+        // testimonials
+        Route::group(['prefix' => 'testimonials'], function () {
+            Route::get('/{crypt}', 'testimonials');
+            Route::post('add/{crypt}', 'addTestimonials');
+            Route::post('update/{crypt}', 'updateTestimonials');
+            Route::post('delete/{crypt}', 'deleteTestimonials');
+        });
+
+        // partners
+        Route::group(['prefix' => 'partners'], function () {
+            Route::get('/{crypt}', 'partners');
+            Route::post('add/{crypt}', 'addPartners');
+            Route::post('update/{crypt}', 'updatePartners');
+            Route::post('delete/{crypt}', 'deletePartners');
+        });
+
+    });
 });
 
-// php artisan make:controller Pentaforce/InitApiController
+// php artisan make:controller Pentaforce/AboutSiteController
 
 
 
