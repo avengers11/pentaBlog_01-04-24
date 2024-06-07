@@ -324,7 +324,6 @@ class SiteManagementApiController extends Controller
 
         return response()->json($information);
     }
-
     public function faqAdd(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
@@ -433,8 +432,6 @@ class SiteManagementApiController extends Controller
         BasicSetting::where('user_id', $user->id)->update(['adsense_publisher_id' => $request->adsense_publisher_id]);
         return response()->json(['success' => 'Settings updated successfully!'], 200);
     }
-
-
     public function advertisementAdd(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
@@ -465,7 +462,6 @@ class SiteManagementApiController extends Controller
 
         return response()->json(['success' => 'New advertisement added successfully!'], 200);
     }
-
     public function advertisementUpdate(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
@@ -501,8 +497,7 @@ class SiteManagementApiController extends Controller
         $adv->save();
 
         return response()->json(['success' => 'Advertisement update successfully!'], 200);
-    }
-    public function advertisementDelete(Request $request, $crypt)
+    }    public function advertisementDelete(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
 
@@ -1055,14 +1050,13 @@ class SiteManagementApiController extends Controller
 
         return $data;
     }
-    public function pageAdd(Request $request, $crypt)
+    public function pageStore(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
-        $rules = ['status' => 'required'];
-        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
+        $language = Language::find($request->language_id);
 
         $messages = [];
+        $rules = ['status' => 'required'];
         $rules['title'] = 'required|max:255';
         $messages['title.required'] = 'The title field is required for ' . $language->name . ' language.';
         $messages['title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
@@ -1085,30 +1079,115 @@ class SiteManagementApiController extends Controller
         $pageContent->page_id = $page->id;
         $pageContent->title = $request['title'];
         $pageContent->slug = make_slug($request['title']);
-        $pageContent->content = "You can write anything here!";
+        $pageContent->content = $request->content != "Content" ? "" : $request->content;
         $pageContent->meta_keywords = $request['meta_keywords'];
         $pageContent->meta_description = $request['meta_description'];
         $pageContent->save();
 
-        return response()->json(['success' => "New page added successfully!", 'id' => $pageContent->id], 200);
+        return response()->json(['success' => "New page added successfully!"], 200);
     }
-    public function pageCheck(Request $request)
+    public function pageEdit($crypt, Request $request)
     {
-        $content = PageContent::where('id', $request->id)->first();
-        return response()->json($content, 200);
+        $user = User::find(Crypt::decrypt($crypt));
+        $information['languages'] = Language::where('user_id', $user->id)
+        ->orderByRaw('id = ? DESC', [$user->default_language_id])
+        ->latest()
+        ->get();
+
+        $information['pages'] = DB::table('user_pages')
+        ->join('user_page_contents', 'user_pages.id', '=', 'user_page_contents.page_id')
+        ->where('user_page_contents.user_id', '=', $user->id)
+        ->where('user_pages.id', '=', $request->id)
+        ->first();
+
+        return $information;
     }
-    public function pageUpdateContent(Request $request)
+    public function pageUpdate(Request $request, $crypt)
     {
-        $content = PageContent::where('id', $request->id)->first();
-        $content -> content = $request->textarea;
-        $content -> save();
-        return response()->json(['success' => 'Your content successfully updated!'], 200);
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $messages = [];
+        $rules = ['status' => 'required'];
+        $rules['title'] = 'required|max:255';
+        $rules['content'] = 'required';
+        $messages['title.required'] = 'The title field is required!';
+        $messages['title.max'] = 'The title field cannot contain more than 255 characters!';
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+        $page = Page::where('user_id', $user->id)->where('id', $request->id)->first();
+        $page->status = $request->status;
+        $page->save();
+
+        $pageContent = PageContent::where('page_id', $page->id)->first();
+        $pageContent->title = $request['title'];
+        $pageContent->slug = make_slug($request['title']);
+        $pageContent->content = $request->content;
+        $pageContent->meta_keywords = $request['meta_keywords'];
+        $pageContent->meta_description = $request['meta_description'];
+        $pageContent->save();
+
+        return response()->json(['success' => "New page added successfully!"], 200);
     }
     public function pageDelete(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
         Page::query()->where('id', $request->id)->where('user_id', $user->id)->delete();
         return response()->json(['success' => 'Page deleted successfully!'], 200);
     }
+
+
+    // public function pageAdd(Request $request, $crypt)
+    // {
+    //     $user = User::find(Crypt::decrypt($crypt));
+
+    //     $rules = ['status' => 'required'];
+    //     $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
+
+    //     $messages = [];
+    //     $rules['title'] = 'required|max:255';
+    //     $messages['title.required'] = 'The title field is required for ' . $language->name . ' language.';
+    //     $messages['title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
+
+    //     $validator = Validator::make($request->all(), $rules, $messages);
+    //     if ($validator->fails()) {
+    //         $errors = $validator->errors()->all();
+    //         $errorMessage = implode(', ', $errors);
+    //         return response()->json(['error' => $errorMessage], 422);
+    //     }
+
+    //     $page = new Page();
+    //     $page->status = $request->status;
+    //     $page->user_id = $user->id;
+    //     $page->save();
+
+    //     $pageContent = new PageContent();
+    //     $pageContent->language_id = $language->id;
+    //     $pageContent->user_id = $user->id;
+    //     $pageContent->page_id = $page->id;
+    //     $pageContent->title = $request['title'];
+    //     $pageContent->slug = make_slug($request['title']);
+    //     $pageContent->content = "You can write anything here!";
+    //     $pageContent->meta_keywords = $request['meta_keywords'];
+    //     $pageContent->meta_description = $request['meta_description'];
+    //     $pageContent->save();
+
+    //     return response()->json(['success' => "New page added successfully!", 'id' => $pageContent->id], 200);
+    // }
+    // public function pageCheck(Request $request)
+    // {
+    //     $content = PageContent::where('id', $request->id)->first();
+    //     return response()->json($content, 200);
+    // }
+    // public function pageUpdateContent(Request $request)
+    // {
+    //     $content = PageContent::where('id', $request->id)->first();
+    //     $content -> content = $request->textarea;
+    //     $content -> save();
+    //     return response()->json(['success' => 'Your content successfully updated!'], 200);
+    // }
+
 }

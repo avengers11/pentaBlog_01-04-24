@@ -776,9 +776,15 @@ Route::group(['prefix' => 'pentaforce'], function () {
         //page
         Route::group(['prefix' => 'page'], function () {
             Route::get('/{crypt}', 'page')->name('page');
-            Route::post('/add/{crypt}', 'pageAdd')->name('pageAdd');
-            Route::get('/check/{crypt}', 'pageCheck')->name('pageCheck');
-            Route::post('/update-content/{crypt}', 'pageUpdateContent')->name('pageUpdateContent');
+
+            Route::post('/store/{crypt}', 'pageStore')->name('pageStore');
+
+            Route::get('/edit/{crypt}', 'pageEdit')->name('pageEdit');
+            Route::post('/update/{crypt}', 'pageUpdate')->name('pageUpdate');
+
+            // Route::post('/add/{crypt}', 'pageAdd')->name('pageAdd');
+            // Route::get('/check/{crypt}', 'pageCheck')->name('pageCheck');
+            // Route::post('/update-content/{crypt}', 'pageUpdateContent')->name('pageUpdateContent');
             Route::post('/delete/{crypt}', 'pageDelete')->name('pageDelete');
         });
 
