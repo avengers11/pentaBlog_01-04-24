@@ -371,7 +371,7 @@ class PostsApiController extends Controller
         $postContent->meta_description = $request['meta_description'];
         $postContent->save();
 
-        return response()->json(['success' => 'Post added successfully!', 'id' => $post->id], 200);
+        return response()->json(['success' => 'Post updated successfully!', 'id' => $post->id], 200);
     }
     // postCheck
     public function postCheck(Request $request)
