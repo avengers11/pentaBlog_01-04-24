@@ -43,7 +43,7 @@ class MenuBuilderApiController extends Controller
         $menu = new Menu;
         $menu->language_id = $request->language_id;
         $menu->user_id = $user->id;
-        $menu->menus = json_encode($request->str);
+        $menu->menus = isset($request->str) ? json_encode($request->str) : [];
         $menu->save();
         return response()->json(['status' => 'success', 'message' => 'Menu updated successfully!']);
     }
