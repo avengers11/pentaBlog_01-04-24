@@ -195,7 +195,7 @@
                                         </div>
                                     @endforeach
                                     @if (Auth::guard('customer')->user())
-                                        @if (\App\Models\user\UserOrderItem::where('customer_id', Auth::guard('customer')->user()->id)->where('item_id', $ad_details->item_id)->exists())
+                                        @if (\App\Models\User\UserOrderItem::where('customer_id', Auth::guard('customer')->user()->id)->where('item_id', $ad_details->item_id)->exists())
                                             <div class="review_form">
                                                 <form action="{{ route('item.review.submit', getParam()) }}"
                                                     method="POST">
