@@ -89,7 +89,7 @@
                         </div>
 
                         @php
-                            $variations = App\Models\User\UserItemVariation::where('item_id', $ad_details->item_id)
+                            $variations = \App\Models\User\UserItemVariation::where('item_id', $ad_details->item_id)
                                 ->where('language_id', $currentLanguageInfo->id)
                                 ->get();
                             if (count($variations) == 0) {
@@ -110,7 +110,7 @@
                         </span>
                         <p>{{ $ad_details->summary }}</p>
                         @php
-                            $variations = App\Models\User\UserItemVariation::where('item_id', $ad_details->item_id)
+                            $variations = \App\Models\User\UserItemVariation::where('item_id', $ad_details->item_id)
                                 ->where('language_id', $currentLanguageInfo->id)
                                 ->get();
                             if (count($variations) == 0) {
@@ -195,7 +195,7 @@
                                         </div>
                                     @endforeach
                                     @if (Auth::guard('customer')->user())
-                                        @if (App\Models\user\UserOrderItem::where('customer_id', Auth::guard('customer')->user()->id)->where('item_id', $ad_details->item_id)->exists())
+                                        @if (\App\Models\user\UserOrderItem::where('customer_id', Auth::guard('customer')->user()->id)->where('item_id', $ad_details->item_id)->exists())
                                             <div class="review_form">
                                                 <form action="{{ route('item.review.submit', getParam()) }}"
                                                     method="POST">
@@ -301,7 +301,7 @@
                                     class="img-fluid lazy" alt="">
                             </a>
                             @php
-                                $variations = App\Models\User\UserItemVariation::where('item_id', $ad_details->item_id)
+                                $variations = \App\Models\User\UserItemVariation::where('item_id', $ad_details->item_id)
                                     ->where('language_id', $currentLanguageInfo->id)
                                     ->get();
                                 if (count($variations) == 0) {
