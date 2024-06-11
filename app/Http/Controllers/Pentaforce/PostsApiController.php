@@ -224,52 +224,63 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $languages = Language::where('user_id', $user->id)
-        ->orderByRaw('id = ? DESC', [$user->default_language_id])
-        ->latest()
-        ->get();
-        $category = PostCategory::where('user_id', $user->id)->get();
+        $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
 
+        $categories = [];
+        foreach ($data["langs"] as $value) {
+            $categories[$value->code] = PostCategory::where('user_id', $user->id)->where('language_id', $value->id)->get();
+        }
+        $data['categories'] = $categories;
 
-        return response()->json(['languages' => $languages, "category" => $category]);
+        return response()->json($data);
     }
     public function postAdd(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $count = LimitCheckerHelper::currentPostsCount($user->id);
-
-        $limit = LimitCheckerHelper::postsLimit($user->id);
+        $count = LimitCheckerHelper::currentPostsCount($user->id);//count of current package
+        $limit = LimitCheckerHelper::postsLimit($user->id);//limit count of current package
         if($count >= $limit){
-            return response()->json(['error' => 'Post Limit Exceeded!'], 200);
+            return response()->json(['warning' => 'Post Limit Exceeded!'], 200);
         }
 
         $rules = [
             'serial_number' => 'required'
         ];
 
-        $language = Language::find($request->language);
+        $languages = Language::where('user_id', $user->id)->get();
+
         $messages = [];
-        $slug = make_slug($request['title']);
-        $rules['title'] = [
-            'required',
-            'max:255',
-            function ($attribute, $value, $fail) use ($slug, $language, $user) {
-                $pcs = PostContent::where('user_id', $user->id)->get();
-                foreach ($pcs as $key => $pc) {
-                    if (strtolower($slug) == strtolower($pc->slug)) {
-                        $fail('The title field must be unique for ' . $language->name . ' language.');
+        foreach ($languages as $language) {
+            $slug = make_slug($request[$language->code . '_title']);
+            $rules[$language->code . '_title'] = [
+                'required',
+                'max:255',
+                function ($attribute, $value, $fail) use ($slug, $language, $user) {
+                    $pcs = PostContent::where('user_id', $user->id)->get();
+                    foreach ($pcs as $key => $pc) {
+                        if (strtolower($slug) == strtolower($pc->slug)) {
+                            $fail('The title field must be unique for ' . $language->name . ' language.');
+                        }
                     }
                 }
-            }
-        ];
-        $rules["category"] = 'required';
-        $rules["author"] = 'required';
+            ];
+            $rules[$language->code . '_category'] = 'required';
+            $rules[$language->code . '_author'] = 'required';
+            $rules[$language->code . '_content'] = 'required|min:15';
 
-        $messages['title.required'] = 'The title field is required for ' . $language->name . ' language.';
-        $messages['title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
-        $messages['category.required'] = 'The category field is required for ' . $language->name . ' language.';
-        $messages['author.required'] = 'The author field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_title.required'] = 'The title field is required for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_category.required'] = 'The category field is required for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_author.required'] = 'The author field is required for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_content.required'] = 'The content field is required for ' . $language->name . ' language.';
+
+            $messages[$language->code . '_content.min'] = 'The content field at least have 15 characters for ' . $language->name . ' language.';
+        }
 
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -285,18 +296,21 @@ class PostsApiController extends Controller
         $post->serial_number = $request->serial_number;
         $post->user_id = $user->id;
         $post->save();
-        $postContent = new PostContent();
-        $postContent->language_id = $language->id;
-        $postContent->user_id = $user->id;
-        $postContent->post_category_id = $request['category'];
-        $postContent->post_id = $post->id;
-        $postContent->title = $request['title'];
-        $postContent->slug = make_slug($request['title']);
-        $postContent->author = $request['author'];
-        $postContent->content = Purifier::clean($request['content']);
-        $postContent->meta_keywords = $request['meta_keywords'];
-        $postContent->meta_description = $request['meta_description'];
-        $postContent->save();
+
+        foreach ($languages as $language) {
+            $postContent = new PostContent();
+            $postContent->language_id = $language->id;
+            $postContent->user_id = $user->id;
+            $postContent->post_category_id = $request[$language->code . '_category'];
+            $postContent->post_id = $post->id;
+            $postContent->title = $request[$language->code . '_title'];
+            $postContent->slug = make_slug($request[$language->code . '_title']);
+            $postContent->author = $request[$language->code . '_author'];
+            $postContent->content = Purifier::clean($request[$language->code . '_content']);
+            $postContent->meta_keywords = $request[$language->code . '_meta_keywords'];
+            $postContent->meta_description = $request[$language->code . '_meta_description'];
+            $postContent->save();
+        }
 
         return response()->json(['success' => 'Post added successfully!', 'id' => $post->id], 200);
     }
@@ -304,18 +318,25 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $information['languages'] = Language::where('user_id', $user->id)
-        ->orderByRaw('id = ? DESC', [$user->default_language_id])
-        ->latest()
-        ->get();
-        $information['category'] = PostCategory::where('user_id', $user->id)->get();
-        $information['posts'] = DB::table('posts')
-        ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
-        ->where('post_contents.user_id', '=', $user->id)
-        ->where('posts.id', '=', $request->id)
-        ->first();
+        $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
+        $data["post"] = Post::where('id', $request->post_id)->first();
 
-        return response()->json($information);
+        $categories = [];
+        $content = [];
+        foreach ($data["langs"] as $value) {
+            $contents = PostContent::where('post_id', $request->post_id)->first();
+            $categories = PostCategory::where('language_id', $value->id)->where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+
+            $content[$value->code] = [
+                $contents,
+                $categories
+            ];
+
+        }
+        $data['categories'] = $categories;
+        $data['content'] = $content;
+
+        return response()->json($data);
     }
     public function postUpdate(Request $request, $crypt)
     {

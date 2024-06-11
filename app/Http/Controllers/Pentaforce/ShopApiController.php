@@ -238,10 +238,8 @@ class ShopApiController extends Controller
     public function itemCategory(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
-        $data["langs"] = Language::where('user_id', $user->id)->get();
-        $data['itemcategories'] = UserItemCategory::where('language_id', $languageId)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
-        $data['lang_id'] = $languageId;
+        $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
+        $data['itemcategories'] = UserItemCategory::where('user_id', $user->id)->orderBy('id', 'DESC')->get();
 
         return response()->json($data);
     }
@@ -340,13 +338,11 @@ class ShopApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
-        $data['categories'] = UserItemCategory::where('language_id', $languageId)->where('user_id', $user->id)->orderBy('name', 'ASC')->get();
-        $data['itemsubcategories'] = UserItemSubCategory::where('language_id', $languageId)->where('user_id', $user->id)
+        $data['categories'] = UserItemCategory::where('user_id', $user->id)->orderBy('name', 'ASC')->get();
+        $data['itemsubcategories'] = UserItemSubCategory::where('user_id', $user->id)
             ->with('category')
             ->orderBy('id', 'DESC')->get();
         $data["langs"] = Language::where('user_id', $user->id)->get();
-        $data['lang_id'] = $languageId;
 
         return response()->json($data);
     }
@@ -425,20 +421,120 @@ class ShopApiController extends Controller
     Add Item - DIGITAL PRODUCT
     ==========================
     */
-    public function itemDigitalProductAdd(Request $request, $crypt)
+    function itemProductAdd($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
+        $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
 
+        $categories = [];
+        foreach ($data["langs"] as $value) {
+            $categories[$value->code] = UserItemCategory::where('language_id', $value->id)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        }
+        $data['categories'] = $categories;
+
+        return response()->json($data);
+    }
+    public function itemProductAddSubmit(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        // $messages = [];
+        // $rules = [];
+        // $rules['image'] = 'required';
+        // $rules['status'] = 'required';
+        // $rules['current_price'] = 'required|numeric';
+        // $rules['previous_price'] = 'nullable|numeric';
+
+        // // if product type is 'physical'
+        // if ($request->type == 'physical') {
+        //     $rules['sku'] = 'required';
+        // }
+
+        // $validator = Validator::make($request->all(), $rules, $messages);
+        // if ($validator->fails()) {
+        //     $errors = $validator->errors()->all();
+        //     $errorMessage = implode(', ', $errors);
+        //     return response()->json(['error' => $errorMessage], 422);
+        // }
+
+        // // if the type is digital && 'upload file' method is selected, then store the downloadable file
+        // if ($request->type == 'digital' && $request->file_type == 'upload') {
+        //     if ($request->hasFile('download_file')) {
+        //         $filename = $request->download_file;
+        //     }
+        // }
+
+        // $language = Language::find($request->user_language_id);
+
+        // $item = new UserItem();
+        // $thumbnailImgName = $request->thumbnail;
+        // $item->user_id = $user->id;
+        // $item->stock = $request->stock;
+        // $item->sku = $request->sku;
+        // $item->thumbnail = $thumbnailImgName;
+        // $item->status = $request->status;
+        // $item->current_price = $request->current_price;
+        // $item->previous_price = $request->previous_price ?? 0.00;
+        // $item->type = $request->type;
+        // $item->download_file = $filename ?? null;
+        // $item->download_link = $request->download_link;
+        // $item->save();
+        // foreach ($request->image as $value) {
+        //     UserItemImage::create([
+        //         'item_id' => $item->id,
+        //         'image' => $value,
+        //     ]);
+        // }
+
+        // $adContent = new UserItemContent();
+        // $adContent->item_id = $item->id;
+        // $adContent->language_id = $language->id;
+        // $adContent->category_id = $request->category;
+        // $adContent->subcategory_id = $request->subcategory;
+        // $adContent->title = $request->title;
+        // $adContent->slug = make_slug($request->sku);
+        // $adContent->summary = $request->summary;
+        // $adContent->tags = $request->tags;
+        // $adContent->description = Purifier::clean($request->description);
+        // $adContent->meta_keywords = $request->keyword;
+        // $adContent->meta_description = $request->keyword;
+        // $adContent->save();
+
+        // return response()->json(['success' => 'Item added successfully!'], 200);
+
+
+        $languages = Language::where('user_id', $user->id)->get();
         $messages = [];
         $rules = [];
-        $rules['image'] = 'required';
         $rules['status'] = 'required';
         $rules['current_price'] = 'required|numeric';
         $rules['previous_price'] = 'nullable|numeric';
 
+        foreach ($languages as $language) {
+            $rules[$language->code . '_title'] = 'required';
+            $rules[$language->code . '_category'] = 'required';
+            $rules[$language->code . '_subcategory'] = 'required';
+            $messages[$language->code . '_category.required'] = 'The Category field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_subcategory.required'] = 'The Subcategory field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_title.required'] = 'The Title field is required for ' . $language->name . ' language.';
+        }
+
+
         // if product type is 'physical'
         if ($request->type == 'physical') {
             $rules['sku'] = 'required';
+        }
+
+        // if product type is 'digital'
+        if ($request->type == 'digital') {
+            $rules['file_type'] = 'required';
+            // if 'file upload' is chosen
+            if ($request->has('file_type') && $request->file_type == 'upload') {
+                $rules['download_file'] = 'required';
+            }
+            // if 'file donwload link' is chosen
+            elseif ($request->has('file_type') && $request->file_type == 'link') {
+                $rules['download_link'] = 'required';
+            }
         }
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -448,50 +544,166 @@ class ShopApiController extends Controller
             return response()->json(['error' => $errorMessage], 422);
         }
 
-        // if the type is digital && 'upload file' method is selected, then store the downloadable file
-        if ($request->type == 'digital' && $request->file_type == 'upload') {
-            if ($request->hasFile('download_file')) {
-                $filename = $request->download_file;
-            }
-        }
-
-        $language = Language::find($request->user_language_id);
-
         $item = new UserItem();
-        $thumbnailImgName = $request->thumbnail;
+        // set a name for the thumbnail image and store it to local storage
         $item->user_id = $user->id;
         $item->stock = $request->stock;
         $item->sku = $request->sku;
-        $item->thumbnail = $thumbnailImgName;
+        $item->thumbnail = $request->thumbnail;
         $item->status = $request->status;
         $item->current_price = $request->current_price;
         $item->previous_price = $request->previous_price ?? 0.00;
         $item->type = $request->type;
-        $item->download_file = $filename ?? null;
+        $item->download_file = $request->download_file ?? null;
         $item->download_link = $request->download_link;
         $item->save();
-        foreach ($request->image as $value) {
+        foreach ($request->galleries as $value) {
             UserItemImage::create([
                 'item_id' => $item->id,
                 'image' => $value,
             ]);
         }
-
-        $adContent = new UserItemContent();
-        $adContent->item_id = $item->id;
-        $adContent->language_id = $language->id;
-        $adContent->category_id = $request->category;
-        $adContent->subcategory_id = $request->subcategory;
-        $adContent->title = $request->title;
-        $adContent->slug = make_slug($request->sku);
-        $adContent->summary = $request->summary;
-        $adContent->tags = $request->tags;
-        $adContent->description = Purifier::clean($request->description);
-        $adContent->meta_keywords = $request->keyword;
-        $adContent->meta_description = $request->keyword;
-        $adContent->save();
+        // store varations as json
+        foreach ($languages as $language) {
+            $adContent = new UserItemContent();
+            $adContent->item_id = $item->id;
+            $adContent->language_id = $language->id;
+            $adContent->category_id = $request[$language->code . '_category'];
+            $adContent->subcategory_id = $request[$language->code . '_subcategory'];
+            $adContent->title = $request[$language->code . '_title'];
+            $adContent->slug = make_slug($request[$language->code . '_title']);
+            $adContent->summary = $request[$language->code . '_summary'];
+            $adContent->tags = $request[$language->code . '_tags'];
+            $adContent->description = Purifier::clean($request[$language->code . '_description']);
+            $adContent->meta_keywords = $request[$language->code . '_keyword'];
+            $adContent->meta_description = $request[$language->code . '_meta_keyword'];
+            $adContent->save();
+        }
 
         return response()->json(['success' => 'Item added successfully!'], 200);
+    }
+    public function itemProductEdit(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
+        $data['items'] = UserItem::find($request->products_id);
+
+        $content = [];
+        $categories = [];
+        foreach ($data["langs"] as $value) {
+            $language = UserItemContent::where('item_id', $request->products_id)->where('language_id', $value->id)->first();
+            $subcategory = UserItemSubCategory::where('category_id', $language->category_id)->first();
+
+            $content[$value->code] = [
+                $language,
+                $subcategory
+            ];
+
+            $categories[$value->code] = UserItemCategory::where('language_id', $value->id)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        }
+        $data['categories'] = $categories;
+        $data['content'] = $content;
+
+        $data['galleries'] = UserItemImage::where('item_id', $request->products_id)->orderBy('id', 'DESC')->get();
+
+        return response()->json($data);
+    }
+    public function itemProductUpdateSubmit(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $languages = Language::where('user_id', $user->id)->get();
+        $messages = [];
+        $rules = [];
+        $rules['status'] = 'required';
+        $rules['current_price'] = 'required|numeric';
+        $rules['previous_price'] = 'nullable|numeric';
+
+        foreach ($languages as $language) {
+            $rules[$language->code . '_title'] = 'required';
+            $rules[$language->code . '_category'] = 'required';
+            $rules[$language->code . '_subcategory'] = 'required';
+            $messages[$language->code . '_category.required'] = 'The Category field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_subcategory.required'] = 'The Subcategory field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_title.required'] = 'The Title field is required for ' . $language->name . ' language.';
+        }
+
+
+        // if product type is 'physical'
+        if ($request->type == 'physical') {
+            $rules['sku'] = 'required';
+        }
+
+        // if product type is 'digital'
+        if ($request->type == 'digital') {
+            $rules['file_type'] = 'required';
+            // if 'file upload' is chosen
+            if ($request->has('file_type') && $request->file_type == 'upload') {
+                $rules['download_file'] = 'required';
+            }
+            // if 'file donwload link' is chosen
+            elseif ($request->has('file_type') && $request->file_type == 'link') {
+                $rules['download_link'] = 'required';
+            }
+        }
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        $item = UserItem::where('id', $request->item_id)->where('user_id', $user->id)->first();
+        $item->stock = $request->stock;
+        $item->sku = $request->sku;
+        if($request->thumbnail != null){
+            $item->thumbnail = $request->thumbnail;
+        }
+        $item->status = $request->status;
+        $item->current_price = $request->current_price;
+        $item->previous_price = $request->previous_price ?? 0.00;
+        $item->type = $request->type;
+        $item->download_file = $request->download_file ?? null;
+        $item->download_link = $request->download_link;
+        $item->save();
+
+        if($request->galleries != null){
+            $allGalleryImg = UserItemImage::where('item_id', $item->id)->get();
+            foreach ($allGalleryImg as $value) {
+                Storage::url($value);
+                $value->delete();
+            }
+            foreach ($request->galleries as $value) {
+                UserItemImage::create([
+                    'item_id' => $item->id,
+                    'image' => $value,
+                ]);
+            }
+        }
+
+
+        // store varations as json
+        foreach ($languages as $language) {
+            $adContent = UserItemContent::where('item_id', $request->item_id)->where('language_id', $language->id)->first();
+            $adContent->category_id = $request[$language->code . '_category'];
+            $adContent->subcategory_id = $request[$language->code . '_subcategory'];
+            $adContent->title = $request[$language->code . '_title'];
+            $adContent->slug = make_slug($request[$language->code . '_title']);
+            $adContent->summary = $request[$language->code . '_summary'];
+            $adContent->tags = $request[$language->code . '_tags'];
+            $adContent->description = Purifier::clean($request[$language->code . '_description']);
+            $adContent->meta_keywords = $request[$language->code . '_keyword'];
+            $adContent->meta_description = $request[$language->code . '_meta_keyword'];
+            $adContent->save();
+        }
+
+        return response()->json(['success' => 'Item updated successfully!'], 200);
+    }
+    public function itemProductSubCategory(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        return UserItemSubCategory::where('user_id', $user->id)->where('category_id', $request->category_id)->get();
     }
     public function itemDigitalProductsubCategroy($id)
     {
@@ -552,9 +764,7 @@ class ShopApiController extends Controller
 
         // if the type is digital && 'upload file' method is selected, then store the downloadable file
         if ($request->type == 'digital' && $request->file_type == 'upload') {
-            if ($request->hasFile('download_file')) {
-                $filename = $request->download_file;
-            }
+            $filename = $request->download_file;
         }
 
         $item = UserItem::where('id', $request->item_id)->where('user_id', $user->id)->first();
@@ -576,13 +786,11 @@ class ShopApiController extends Controller
         $item->save();
 
         if($request->image != null){
-            // delete all gallary img
             $allGalleryImg = UserItemImage::where('item_id', $item->id)->get();
             foreach ($allGalleryImg as $value) {
                 Storage::url($value);
                 $value->delete();
             }
-            // add all gallary img
             foreach ($request->image as $value) {
                 UserItemImage::create([
                     'item_id' => $item->id,

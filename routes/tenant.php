@@ -591,11 +591,17 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
         // Add Item - DIGITAL PRODUCT
         Route::get('/item-product/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProduct');
-        Route::post('/item-product-add/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductAdd');
         Route::get('/item-product-subCategroy/{id}', 'Pentaforce\ShopApiController@itemDigitalProductsubCategroy');
         Route::post('/item-product-update/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
         Route::get('/item-product-single-show/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductSingleShow');
         Route::post('/item-product-delete/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductDelete');
+
+        // new
+        Route::get('/item-product-add/{crypt}', 'Pentaforce\ShopApiController@itemProductAdd');
+        Route::get('/item-product-edit/{crypt}', 'Pentaforce\ShopApiController@itemProductEdit');
+        Route::get('/item-product-sub-category/{crypt}', 'Pentaforce\ShopApiController@itemProductSubCategory');
+        Route::post('/item-product-add-submit/{crypt}', 'Pentaforce\ShopApiController@itemProductAddSubmit');
+        Route::post('/item-product-update-submit/{crypt}', 'Pentaforce\ShopApiController@itemProductUpdateSubmit');
 
 
         /*
