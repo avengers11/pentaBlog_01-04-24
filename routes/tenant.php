@@ -590,7 +590,8 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::post('/item-subcategory-delete/{crypt}', 'Pentaforce\ShopApiController@itemSubcategoryDelete');
 
         // Add Item - DIGITAL PRODUCT
-        Route::get('/item-product/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProduct');
+        Route::get('/item-show/{crypt}', 'Pentaforce\ShopApiController@itemShow');
+        Route::get('/item-product/{crypt}', 'Pentaforce\ShopApiController@itemProduct');
         Route::get('/item-product-subCategroy/{id}', 'Pentaforce\ShopApiController@itemDigitalProductsubCategroy');
         Route::post('/item-product-update/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductUpdate');
         Route::get('/item-product-single-show/{crypt}', 'Pentaforce\ShopApiController@itemDigitalProductSingleShow');

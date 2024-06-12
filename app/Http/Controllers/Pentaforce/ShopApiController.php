@@ -418,10 +418,37 @@ class ShopApiController extends Controller
 
 
     /*
-    Add Item - DIGITAL PRODUCT
+    Add Item
     ==========================
     */
-    function itemProductAdd($crypt)
+    public function itemShow($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $data['digitalCount'] = UserItem::where('type', 'digital')->where('user_id', $user->id)->count();
+        $data['physicalCount'] = UserItem::where('type', 'physical')->where('user_id', $user->id)->count();
+
+        return $data;
+    }
+    public function itemProduct(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
+        $data['items'] = DB::table('user_items')->where('user_items.user_id', $user->id)
+            ->Join('user_item_contents', 'user_items.id', '=', 'user_item_contents.item_id')
+            ->join('user_item_categories', 'user_item_contents.category_id', '=', 'user_item_categories.id')
+            ->select('user_items.*', 'user_items.id AS item_id', 'user_item_contents.*', 'user_item_categories.name AS category')
+            ->orderBy('user_items.id', 'DESC')
+            ->where('user_item_contents.language_id', '=', $languageId)
+            ->where('user_item_categories.language_id', '=', $languageId)
+            ->get();
+        $data['lang_id'] = $languageId;
+
+        return response()->json($data);
+    }
+
+
+    public function itemProductAdd($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
         $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
@@ -709,21 +736,7 @@ class ShopApiController extends Controller
     {
         return UserItemSubCategory::where('category_id', $id)->orderBy('name', 'ASC')->get();
     }
-    public function itemDigitalProduct(Request $request, $crypt)
-    {
-        $user = User::find(Crypt::decrypt($crypt));
 
-        $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
-        $data['items'] = DB::table('user_items')->where('user_items.user_id', $user->id)
-            ->Join('user_item_contents', 'user_items.id', '=', 'user_item_contents.item_id')
-            ->join('user_item_categories', 'user_item_contents.category_id', '=', 'user_item_categories.id')
-            ->select('user_items.*', 'user_items.id AS item_id', 'user_item_contents.*', 'user_item_categories.name AS category')
-            ->orderBy('user_items.id', 'DESC')
-            ->get();
-        $data['lang_id'] = $languageId;
-
-        return response()->json($data);
-    }
     public function itemDigitalProductSingleShow(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));

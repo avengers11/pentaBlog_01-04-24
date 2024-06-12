@@ -203,20 +203,18 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $information['count'] = LimitCheckerHelper::currentPostsCount($user->id);//count of posts
+        $information['count'] = LimitCheckerHelper::currentPostsCount($user->id);
         $information['limit'] = LimitCheckerHelper::postsLimit($user->id);
-
-        $information['featuredCount'] = LimitCheckerHelper::currentFeaturedPostsCount($user->id);//count of current featured posts
+        $information['featuredCount'] = LimitCheckerHelper::currentFeaturedPostsCount($user->id);
         $information['featuredLimit'] = LimitCheckerHelper::featurePostsLimit($user->id);
-
+        $languageId =   Language::where('is_default', 1)->where('user_id', $user->id)->pluck('id')->first();
         $information['posts'] = DB::table('posts')
             ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
+            ->where('post_contents.language_id', '=', $languageId)
             ->where('post_contents.user_id', '=', $user->id)
             ->orderByDesc('posts.id')
             ->get();
-
         $information['themeInfo'] = BasicSetting::where('user_id', '=', $user->id)->select('theme_version')->first();
-        $information['category'] = PostCategory::where('user_id', $user->id)->get();
 
         return response()->json($information);
     }
@@ -292,7 +290,7 @@ class PostsApiController extends Controller
 
         $post = new Post();
         $post->thumbnail_image = $request->thumbnail_image;
-        $post->slider_images = json_encode($request->slider_images);
+        $post->slider_images = json_encode($request->galleries);
         $post->serial_number = $request->serial_number;
         $post->user_id = $user->id;
         $post->save();
@@ -342,17 +340,32 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
+        $count = LimitCheckerHelper::currentPostsCount($user->id);//count of current package
+        $limit = LimitCheckerHelper::postsLimit($user->id);//limit count of current package
+        if($count >= $limit){
+            return response()->json(['warning' => 'Post Limit Exceeded!'], 200);
+        }
+
         $rules = [
             'serial_number' => 'required'
         ];
+
+        $languages = Language::where('user_id', $user->id)->get();
+
         $messages = [];
-        $rules['title'] = 'required';
-        $rules["category"] = 'required';
-        $rules["author"] = 'required';
-        $messages['title.required'] = 'The title field is required!';
-        $messages['title.max'] = 'The title field cannot contain more than 255 characters!';
-        $messages['category.required'] = 'The category field is required!';
-        $messages['author.required'] = 'The author field is required!';
+        foreach ($languages as $language) {
+            $rules[$language->code . '_title'] = 'required';
+            $rules[$language->code . '_category'] = 'required';
+            $rules[$language->code . '_author'] = 'required';
+            $rules[$language->code . '_content'] = 'required|min:15';
+            $messages[$language->code . '_title.required'] = 'The title field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
+            $messages[$language->code . '_category.required'] = 'The category field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_author.required'] = 'The author field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_content.required'] = 'The content field is required for ' . $language->name . ' language.';
+            $messages[$language->code . '_content.min'] = 'The content field at least have 15 characters for ' . $language->name . ' language.';
+        }
+
 
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails()) {
@@ -361,36 +374,27 @@ class PostsApiController extends Controller
             return response()->json(['error' => $errorMessage], 422);
         }
 
-
-
-
-        $post = Post::where('user_id', $user->id)->where('id', $request->id)->first();
+        $post = Post::where('id', $request->id)->where('user_id', $user->id)->first();
         if($request->thumbnail_image != null){
-            if ($post->thumbnail_image != null) {
-                Storage::delete($post->thumbnail_image);
-            }
             $post->thumbnail_image = $request->thumbnail_image;
         }
-
-        if($request->slider_images != null){
-            foreach (json_decode($request->slider_images) as $value) {
-                Storage::delete($value);
-            }
-            $post->slider_images = json_encode($request->slider_images);
+        if($request->galleries != null){
+            $post->slider_images = json_encode($request->galleries);
         }
-
         $post->serial_number = $request->serial_number;
         $post->save();
 
-        $postContent = PostContent::where("post_id", $post->id)->first();
-        $postContent->post_category_id = $request['category'];
-        $postContent->title = $request['title'];
-        $postContent->slug = make_slug($request['title']);
-        $postContent->author = $request['author'];
-        $postContent->content = Purifier::clean($request['content']);
-        $postContent->meta_keywords = $request['meta_keywords'];
-        $postContent->meta_description = $request['meta_description'];
-        $postContent->save();
+        foreach ($languages as $language) {
+            $postContent = PostContent::where('user_id', $user->id)->where('post_id', $post->id)->where('language_id', $language->id)->first();
+            $postContent->post_category_id = $request[$language->code . '_category'];
+            $postContent->title = $request[$language->code . '_title'];
+            $postContent->slug = make_slug($request[$language->code . '_title']);
+            $postContent->author = $request[$language->code . '_author'];
+            $postContent->content = Purifier::clean($request[$language->code . '_content']);
+            $postContent->meta_keywords = $request[$language->code . '_meta_keywords'];
+            $postContent->meta_description = $request[$language->code . '_meta_description'];
+            $postContent->save();
+        }
 
         return response()->json(['success' => 'Post updated successfully!', 'id' => $post->id], 200);
     }

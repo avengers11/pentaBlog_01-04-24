@@ -93,7 +93,7 @@ class AboutSiteController extends Controller
 
         $slider = SliderImage::where('user_id', $user->id)->where('id', $request->id)->first();
         if ($slider->image != null) {
-            Storage::delete($slider->image);
+            // Storage::delete($slider->image);
         }
         $slider->delete();
 
@@ -421,7 +421,7 @@ class AboutSiteController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
         $brand = Brand::where('id', $request->id)->where('user_id', $user->id)->first();
         if ($brand->brand_img != null) {
-            Storage::delete($brand->brand_img);
+            // Storage::delete($brand->brand_img);
         }
         $brand->delete();
 
