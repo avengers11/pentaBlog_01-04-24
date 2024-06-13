@@ -110,7 +110,16 @@ class AboutSiteController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
         $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
-        return Information::where('user_id', $user->id)->where('language_id', $languageId)->first();
+        $info = Information::where('user_id', $user->id)->where('language_id', $languageId)->first();
+
+        if(is_null($info)){
+            $info = new Information;
+            $info->language_id = $languageId;
+            $info->user_id = $user->id;
+            $info->save();
+        }
+
+        return $info;
     }
     public function updateInformation(Request $request, $crypt)
     {
