@@ -290,7 +290,7 @@ class PostsApiController extends Controller
 
         $post = new Post();
         $post->thumbnail_image = $request->thumbnail_image;
-        $post->slider_images = json_encode($request->galleries);
+        $post->slider_images = json_encode([$request->galleries]);
         $post->serial_number = $request->serial_number;
         $post->user_id = $user->id;
         $post->save();
@@ -379,7 +379,7 @@ class PostsApiController extends Controller
             $post->thumbnail_image = $request->thumbnail_image;
         }
         if($request->galleries != null){
-            $post->slider_images = json_encode($request->galleries);
+            $post->slider_images = json_encode([$request->galleries]);
         }
         $post->serial_number = $request->serial_number;
         $post->save();
