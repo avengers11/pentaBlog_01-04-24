@@ -177,8 +177,8 @@ class BasicSettingsController extends Controller
             'breadcrumb' => $breadcrumb,
             'preloader_status' => $request->preloader_status,
             'cookie_status' => $request->cookie_status,
-            'primary_color' => $request->primary_color,
-            'breadcrumb_overlay_color' => $request->breadcrumb_overlay_color,
+            'primary_color' => ltrim($request->primary_color, '#'),
+            'breadcrumb_overlay_color' => ltrim($request->breadcrumb_overlay_color, '#'),
             'breadcrumb_overlay_opacity' => $request->breadcrumb_overlay_opacity,
         ]);
 

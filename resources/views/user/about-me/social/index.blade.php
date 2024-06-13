@@ -37,11 +37,8 @@
                                 <div class="form-group">
                                     <label for="">{{ $keywords['Social_Icon'] ?? __('Social Icon') }} **</label>
                                     <div class="btn-group d-block">
-                                        <button type="button" class="btn btn-primary iconpicker-component"><i
-                                                class="fa fa-fw fa-heart"></i></button>
-                                        <button type="button" class="icp icp-dd btn btn-primary dropdown-toggle"
-                                            data-selected="fa-car" data-toggle="dropdown">
-                                        </button>
+                                        <button type="button" class="btn btn-primary iconpicker-component"><i class="fa fa-fw fa-heart"></i></button>
+                                        <button type="button" class="icp icp-dd btn btn-primary dropdown-toggle" data-selected="fa-car" data-toggle="dropdown"> </button>
                                         <div class="dropdown-menu"></div>
                                     </div>
                                     <input id="inputIcon" type="hidden" name="icon" value="">
@@ -52,6 +49,7 @@
                                         <small>{{ $keywords['Social_Icon_text'] ?? __('NB: click on the dropdown icon to select a social link icon.') }}</small>
                                     </div>
                                 </div>
+                                
                                 <div class="form-group">
                                     <label for="">{{ $keywords['URL'] ?? __('URL') }} **</label>
                                     <input type="text" class="form-control" name="url" value=""
