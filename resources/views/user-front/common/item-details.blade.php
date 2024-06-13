@@ -15,7 +15,7 @@
 @section('content')
     <!-- Start olima_breadcrumb section -->
     <section class="olima_breadcrumb bg_imag lazy"
-        @if (!empty($bgImg)) data-bg="{{ asset('assets/user/img/' . $bgImg->breadcrumb) }}" @endif>
+        @if (!empty($bgImg)) data-bg="{{ $bgImg->breadcrumb != null ? Storage::url($bgImg->breadcrumb) : asset('assets/admin/img/noimage.jpg') }}" @endif>
         <div class="bg_overlay"
             style="background: #{{ $websiteInfo->breadcrumb_overlay_color }}; opacity: {{ $websiteInfo->breadcrumb_overlay_opacity }}">
         </div>
@@ -63,7 +63,7 @@
                                 <div class="olima_img">
                                     <a href="{{ asset('assets/front/img/user/items/slider-images/' . $slider->image) }}"
                                         class="gallery-single">
-                                        <img data-src="{{ asset('assets/front/img/user/items/slider-images/' . $slider->image) }}"
+                                        <img data-src="{{ $slider->image != null ? Storage::url($slider->image) : asset('assets/admin/img/noimage.jpg') }}"
                                             class="img-fluid lazy" alt="image">
                                     </a>
                                     {{-- <span class="new">new</span> --}}
@@ -74,7 +74,7 @@
                         <div class="shop_thumb_slide">
                             @foreach ($ad_details->item->sliders as $slider)
                                 <div class="olima_img">
-                                    <img src="{{ asset('assets/front/img/user/items/slider-images/' . $slider->image) }}"
+                                    <img src="{{ $slider->image != null ? Storage::url($slider->image) : asset('assets/admin/img/noimage.jpg') }}"
                                         class="img-fluid" alt="image">
                                 </div>
                             @endforeach
@@ -181,7 +181,7 @@
                                         {{ $ad_details->title }}</h4>
                                     @foreach ($reviews as $review)
                                         <div class="review_user review-content">
-                                            <img data-src="{{ is_null($review->customer->image) ? asset('assets/user/img/profile.jpg') : asset('assets/user/img/users/' . $review->customer->image) }}"
+                                            <img data-src="{{ is_null($review->customer->image) ? asset('assets/user/img/profile.jpg') : Storage::url($review->customer->image)) }}"
                                                 class="lazy">
                                             <ul>
                                                 <div class="rate">
