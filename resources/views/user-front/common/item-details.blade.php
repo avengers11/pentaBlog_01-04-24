@@ -177,11 +177,11 @@
                             <div id="reviews" class="tab-pane fade"><br>
                                 <div class="shop_review_area">
                                     <h4 class="title">({{ count($reviews) }}) {{ $keywords['Reviews'] ?? 'Reviews' }}
-                                        {{ $keywords['for'] ?? 'for' }}
+                                        {{ $keywords['for'] ?? 'for' }}\
                                         {{ $ad_details->title }}</h4>
                                     @foreach ($reviews as $review)
                                         <div class="review_user review-content">
-                                            <img data-src="{{ is_null($review->customer->image) ? asset('assets/user/img/profile.jpg') : Storage::url($review->customer->image)) }}"
+                                            <img data-src="{{ is_null($review->customer->image) ? asset('assets/user/img/profile.jpg') : Storage::url($review->customer->image) }}"
                                                 class="lazy">
                                             <ul>
                                                 <div class="rate">
