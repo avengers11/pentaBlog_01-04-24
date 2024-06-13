@@ -130,7 +130,9 @@ class AboutSiteController extends Controller
 
         $languageId = Language::where('user_id', $user->id)->where('is_default', 1)->pluck('id')->first();
         $info = Information::where('language_id', $languageId)->where('user_id', $user->id)->first();
-
+        if(is_null($info)){
+            $info = new Information;
+        }
 
         if($request->image != null){
             $info->image = $request->image;
@@ -152,9 +154,7 @@ class AboutSiteController extends Controller
         if (strpos($link, '&') != 0) {
             $link = substr($link, 0, strpos($link, '&'));
         }
-        if(is_null($info)){
-            $info = new Information;
-        }
+
         $info->language_id = $languageId;
         $info->user_id = $user->id;
         $info->name = $request->name;
