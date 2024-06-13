@@ -11,7 +11,7 @@
 @section('content')
     <!-- Start olima_breadcrumb section -->
     <section class="olima_breadcrumb bg_imag lazy"
-        @if (!empty($bgImg)) data-bg="{{ asset('assets/user/img/' . $bgImg->breadcrumb) }}" @endif>
+        @if (!empty($bgImg)) data-bg="{{ $bgImg->breadcrumb != null ? Storage::url($bgImg->breadcrumb) : asset('assets/admin/img/noimage.jpg') }}" @endif>
         <div class="bg_overlay"
             style="background: #{{ $websiteInfo->breadcrumb_overlay_color }}; opacity: {{ $websiteInfo->breadcrumb_overlay_opacity }}">
         </div>
@@ -136,7 +136,7 @@
                                     <div class="product_img">
                                         <a
                                             href="{{ route('front.user.item_details', ['slug' => $item->slug, getParam()]) }}">
-                                            <img data-src="{{ asset('assets/front/img/user/items/thumbnail/' . $item->thumbnail) }}"
+                                            <img data-src="{{ $item->thumbnail != null ? Storage::url($item->thumbnail) : asset('assets/admin/img/noimage.jpg') }}"
                                                 class="img-fluid lazy" alt="">
                                         </a>
                                         @php
