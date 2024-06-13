@@ -119,7 +119,7 @@ class AboutSiteController extends Controller
             $info->save();
         }
 
-        return $info;
+        return "okay";
     }
     public function updateInformation(Request $request, $crypt)
     {
