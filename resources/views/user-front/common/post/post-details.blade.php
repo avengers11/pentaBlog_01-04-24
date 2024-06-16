@@ -50,18 +50,8 @@
             <div class="post_content pb-70">
               @php $sldImgs = json_decode($details->post->slider_images); @endphp
 
-              <div class="post-gallery-box pb-45">
-                <div class="post-gallery-slider row">
-                  @foreach ($sldImgs as $img)
-                    <div class="col-lg-6">
-                      <div class="olima_img">
-                        <a href="{{ asset('assets/user/img/posts/slider-images/' . $img) }}" class="gallery-single">
-                          <img data-src="{{ $img != null ? Storage::url($img) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="slider image">
-                        </a>
-                      </div>
-                    </div>
-                  @endforeach
-                </div>
+              <div class="img-wrapper">
+                <img style="width:100%; height:auto" src="{{ $sldImgs[0] != null ? Storage::url($sldImgs[0]) : asset('assets/admin/img/noimage.jpg') }}" class="lazy" alt="slider image">
               </div>
 
               <h3>{{ $details->title }}</h3>
