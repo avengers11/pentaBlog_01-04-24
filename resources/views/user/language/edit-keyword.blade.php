@@ -60,8 +60,7 @@
                 <div class="card-body pt-5 pb-5">
                     <div class="row">
                         <div class="col-lg-12">
-                            <form method="post" action="{{ route('user.language.updateKeyword', $la->id) }}"
-                                id="langForm">
+                            <form method="post" action="{{ route('user.language.updateKeyword', $la->id) }}" id="langForm">
                                 {{ csrf_field() }}
 
                                 <div class="row">

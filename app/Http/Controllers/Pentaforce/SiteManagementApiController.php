@@ -802,6 +802,30 @@ class SiteManagementApiController extends Controller
         $la->delete();
         return response()->json(['success' => "Language Delete Successfully"], 200);
     }
+    public function languageKeywords(Request $request)
+    {
+        $data['la'] = Language::findOrFail($request->id);
+        $data['user_keywords'] = json_decode($data['la']->keywords, true);
+
+        return $data;
+    }
+    public function languageKeywordsUpdate(Request $request, $id, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $langCount = Language::where('user_id', $user->id)->count();
+        $langLimit = UserPermissionHelper::currentPackagePermission($user->id)->language_limit;
+        if ($langCount > $langLimit) {
+            return response()->json(['warning' => "You have to delete " . ($langCount - $langLimit) . " languages to enable Editing Feature of Languages."], 200);
+        }
+        $lang = Language::findOrFail($id);
+        $keywords = $request->all();
+        $lang->keywords = json_encode($keywords[0]);
+        $lang->save();
+
+        return response()->json(['success' => "Kyewords Updated Successfully"], 200);
+    }
+
 
 
     /*

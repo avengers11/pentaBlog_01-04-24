@@ -769,6 +769,9 @@ Route::group(['prefix' => 'pentaforce'], function () {
             Route::post('/update/{crypt}', 'languageUpdate')->name('languageUpdate');
             Route::post('/delete/{crypt}', 'languageDelete')->name('languageDelete');
             Route::post('/default/{crypt}', 'languageDefault')->name('languageDefault');
+
+            Route::get('/keywords/{crypt}', 'languageKeywords')->name('languageKeywords');
+            Route::post('/keywords-update/{id}/{crypt}', 'languageKeywordsUpdate')->name('languageKeywordsUpdate');
         });
 
         //vCard
