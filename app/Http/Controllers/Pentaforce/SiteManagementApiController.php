@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Helpers\LimitCheckerHelper;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Helpers\UserPermissionHelper;
+use App\Models\BasicExtended;
+use App\Models\User\UserCustomDomain;
 
 class SiteManagementApiController extends Controller
 {
@@ -1214,4 +1216,62 @@ class SiteManagementApiController extends Controller
     //     return response()->json(['success' => 'Your content successfully updated!'], 200);
     // }
 
+
+    /*
+    ==============================
+    Domain
+    ==============================
+    */
+    public function domainShow($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $rcDomain = UserCustomDomain::where('status', '<>', 2)->where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+        return $rcDomain;
+    }
+    public function isValidDomain($domain_name) {
+        return (preg_match("/^([a-zd](-*[a-zd])*)(.([a-zd](-*[a-zd])*))*$/i", $domain_name) //valid characters check
+        && preg_match("/^.{1,253}$/", $domain_name) //overall length check
+        && preg_match("/^[^.]{1,63}(.[^.]{1,63})*$/", $domain_name) ); //length of every label
+    }
+    public function domainAdd(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $be = BasicExtended::select('domain_request_success_message', 'cname_record_section_title')->first();
+
+        $rules = [
+            'custom_domain' => [
+                'required',
+                function ($attribute, $value, $fail) use ($be, $user) {
+                    // if user requests the current domain
+                    if (getCdomain($user) == $value) {
+                        $fail('You cannot request your current domain.');
+                    }
+                    // check if domain is valid
+                    if (!$this->isValidDomain($value)) {
+                        $fail('Domain format is not valid');
+                    }
+                }
+            ]
+        ];
+        $messages = [
+            'custom_domain.required' => 'The custom domain field is required.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        $cdomain = new UserCustomDomain;
+        $cdomain->user_id = $user->id;
+        $cdomain->requested_domain = $request->custom_domain;
+        $cdomain->current_domain = getCdomain($user);
+        $cdomain->status = 0;
+        $cdomain->save();
+
+        return response()->json(['success' => $be->domain_request_success_message], 200);
+    }
 }

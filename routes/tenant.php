@@ -798,6 +798,12 @@ Route::group(['prefix' => 'pentaforce'], function () {
             Route::post('/delete/{crypt}', 'pageDelete')->name('pageDelete');
         });
 
+         //domain
+         Route::group(['prefix' => 'domain'], function () {
+            Route::get('/{crypt}', 'domainShow');
+            Route::post('add/{crypt}', 'domainAdd');
+        });
+
         // // setting
         // Route::get('/setting/{crypt}', 'setting')->name('setting');
         // Route::post('/setting-update/{crypt}', 'settingUpdate')->name('settingUpdate');
