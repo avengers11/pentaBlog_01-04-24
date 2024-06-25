@@ -202,19 +202,14 @@ class PostsApiController extends Controller
     public function post(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
-        $information['count'] = LimitCheckerHelper::currentPostsCount($user->id);
-        $information['limit'] = LimitCheckerHelper::postsLimit($user->id);
-        $information['featuredCount'] = LimitCheckerHelper::currentFeaturedPostsCount($user->id);
-        $information['featuredLimit'] = LimitCheckerHelper::featurePostsLimit($user->id);
         $languageId =   Language::where('is_default', 1)->where('user_id', $user->id)->pluck('id')->first();
+
         $information['posts'] = DB::table('posts')
             ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
             ->where('post_contents.language_id', '=', $languageId)
             ->where('post_contents.user_id', '=', $user->id)
             ->orderByDesc('posts.id')
             ->get();
-        $information['themeInfo'] = BasicSetting::where('user_id', '=', $user->id)->select('theme_version')->first();
 
         return response()->json($information);
     }

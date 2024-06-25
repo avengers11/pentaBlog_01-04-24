@@ -18,6 +18,7 @@ use Crypt;
 use Session;
 use App\Models\User\BasicSetting;
 use App\Models\Customer;
+use App\Models\User\Subscriber;
 
 class DashboardApiController extends Controller
 {
@@ -28,13 +29,9 @@ class DashboardApiController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
         $data['user'] = $user;
         $langId = Language::where('user_id', $user->id)->where('is_default', 1)->firstOrFail()->id;
-        $data['followers'] = Follower::where('following_id', $user->id)->count();
-        $data['followings'] = Follower::where('follower_id', $user->id)->count();
 
-        $data['memberships'] = Membership::query()->where('user_id', $user->id)
-            ->orderBy('id', 'DESC')
-            ->limit(10)->get();
-
+        $data['subscs'] = Subscriber::where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        $data['subscs_count'] = Subscriber::where('user_id', $user->id)->count();
 
         $data['posts'] = Post::join('post_contents', 'posts.id', '=', 'post_contents.post_id')
             ->where('post_contents.language_id', '=', $langId)
@@ -43,48 +40,8 @@ class DashboardApiController extends Controller
             ->limit(10)
             ->get();
 
-        $nextPackageCount = Membership::query()->where([
-            ['user_id', $user->id],
-            ['expire_date', '>=', Carbon::now()->toDateString()]
-        ])->where('status', '<>', 2)->count();
-        //current package
-        $data['current_membership'] = Membership::query()->where([
-            ['user_id', $user->id],
-            ['start_date', '<=', Carbon::now()->toDateString()],
-            ['expire_date', '>=', Carbon::now()->toDateString()]
-        ])->first();
-        if ($data['current_membership']) {
-            $countCurrMem = Membership::query()->where([
-                ['user_id', $user->id],
-                ['start_date', '<=', Carbon::now()->toDateString()],
-                ['expire_date', '>=', Carbon::now()->toDateString()]
-            ])->count();
-            if ($countCurrMem > 1) {
-                $data['next_membership'] = Membership::query()->where([
-                    ['user_id', $user->id],
-                    ['start_date', '<=', Carbon::now()->toDateString()],
-                    ['expire_date', '>=', Carbon::now()->toDateString()]
-                ])->where('status', '<>', 2)->orderBy('id', 'DESC')->first();
-            } else {
-                $data['next_membership'] = Membership::query()->where([
-                    ['user_id', $user->id],
-                    ['start_date', '>', $data['current_membership']->expire_date],
-                ])->where('status', '<>', 2)->first();
-            }
-            $data['next_package'] = $data['next_membership'] ? Package::query()->where('id', $data['next_membership']->package_id)->first() : null;
-        }
-        $data['current_package'] = $data['current_membership'] ? Package::query()->where('id', $data['current_membership']->package_id)->first() : null;
-        $data['package_count'] = $nextPackageCount;
         $data['post_count'] = $user->posts->count();
         $data['featured_post_count'] = $user->posts->where('is_featured', 1)->count();
-        $data['post_category_count'] = $user->postCategory->where('language_id', $langId)->count();
-        $data['featured_post_category_count'] = $user->postCategory->where('language_id', $langId)->where('is_featured', 1)->count();
-        $data['gallery_item_count'] = $user->galleryItem->where('language_id', $langId)->count();
-        $data['featured_gallery_item_count'] = $user->galleryItem->where('language_id', $langId)->where('is_featured', 1)->count();
-        $data['gallery_category_count'] = $user->galleryCategory->where('language_id', $langId)->count();
-        $data['faq_count'] = $user->faq->where('language_id', $langId)->count();
-        $data['language_count'] = $user->languages->count();
-        $data['advertisement_count'] = $user->advertisements->count();
         $data['theme'] = BasicSetting::where('user_id', $user->id)
         ->select('theme_version')
         ->first();
