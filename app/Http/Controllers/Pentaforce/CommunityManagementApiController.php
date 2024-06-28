@@ -8,18 +8,27 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Customer;
 use App\Models\User\Popup;
-use App\Models\BasicSetting;
+use App\Models\User\BasicSetting;
 use Illuminate\Http\Request;
 use App\Models\BasicExtended;
 use App\Models\User\Follower;
 use App\Models\User\Language;
 use App\Models\User\Subscriber;
 use PHPMailer\PHPMailer\PHPMailer;
+use App\Models\User\UserShopSetting;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User\UserPaymentGeteway;
+use App\Http\Helpers\UserPermissionHelper;
+use App\Models\User\HomeSection;
+use App\Http\Helpers\MegaMailer;
+use App\Models\User\Menu;
+use App\Models\Membership;
+use App\Models\Package;
+use Session;
 
 class CommunityManagementApiController extends Controller
 {
@@ -28,6 +37,132 @@ class CommunityManagementApiController extends Controller
     Register Users
     ==============================
     */
+    public function registerUserCreate(Request $request)
+    {
+        $rules = [
+            'username' => 'required|alpha_num|unique:users',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed',
+            'package_id' => 'required',
+            'payment_gateway' => 'required',
+            'online_status' => 'required'
+        ];
+
+        $messages = [
+            'package_id.required' => 'The package field is required',
+            'online_status.required' => 'The publicly hidden field is required'
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            return response()->json(['error' => $errorMessage], 422);
+        }
+
+        $user = User::where('username', $request['username']);
+        if ($user->count() == 0) {
+
+            $user = new User;
+            $user->id = $request['id'];
+            $user->first_name = $request['first_name'];
+            $user->last_name = $request['last_name'];
+            $user->email = $request['email'];
+            $user->username = $request['username'];
+            $user->password = bcrypt($request['password']);
+            $user->online_status = $request["online_status"];
+            $user->status = 1;
+            $user->email_verified = 1;
+            $user->save();
+
+            BasicSetting::create([
+                'user_id' => $request['id'],
+            ]);
+            //create default payment gateway
+            $payment_keywords = ['flutterwave', 'razorpay', 'paytm', 'paystack', 'instamojo', 'stripe', 'paypal', 'mollie', 'mercadopago', 'authorize.net'];
+            foreach ($payment_keywords as $key => $value) {
+                UserPaymentGeteway::create([
+                    'title' => null,
+                    'user_id' => $request['id'],
+                    'details' => null,
+                    'keyword' => $value,
+                    'subtitle' => null,
+                    'name' => ucfirst($value),
+                    'type' => 'automatic',
+                    'information' => null
+                ]);
+            }
+            //create default shop Settings
+            UserShopSetting::create([
+                'user_id' => $request['id'],
+                'is_shop' => 1,
+                'catalog_mode' => 0,
+                'item_rating_system' => 1,
+                'tax' => 0,
+            ]);
+
+            $homeSection = new HomeSection();
+            $homeSection->user_id = $request['id'];
+            $homeSection->save();
+        }
+
+        if ($user) {
+            $deLang = Language::firstOrFail();
+            $langCount = Language::where('user_id', $request['id'])->where('is_default', 1)->count();
+            if ($langCount == 0) {
+                $lang = new User\Language;
+                $lang->name = 'English';
+                $lang->code = 'en';
+                $lang->is_default = 1;
+                $lang->rtl = 0;
+                $lang->user_id = $request['id'];
+                $lang->keywords = $deLang->keywords;
+                $lang->save();
+
+                $umenu = new Menu();
+                $umenu->language_id = $lang->id;
+                $umenu->user_id = $request['id'];
+                $umenu->menus = '[{"text":"Home","href":"","icon":"empty","target":"_self","title":"","type":"home"},{"text":"About","href":"","icon":"empty","target":"_self","title":"","type":"about"},{"text":"Posts","href":"","icon":"empty","target":"_self","title":"","type":"posts"},{"text":"Gallery","href":"","icon":"empty","target":"_self","title":"","type":"gallery"},{"text":"FAQs","href":"","icon":"empty","target":"_self","title":"","type":"faq"},{"text":"Contact","href":"","icon":"empty","target":"_self","title":"","type":"contact"}]';
+                $umenu->save();
+            }
+
+            $package = Package::find($request['package_id']);
+            $be = BasicExtended::first();
+            $bs = BasicSetting::select('website_title')->first();
+            $transaction_id = UserPermissionHelper::uniqidReal(8);
+
+            $startDate = Carbon::today()->format('Y-m-d');
+            if ($package->term === "monthly") {
+                $endDate = Carbon::today()->addMonth()->format('Y-m-d');
+            } elseif ($package->term === "yearly") {
+                $endDate = Carbon::today()->addYear()->format('Y-m-d');
+            } elseif ($package->term === "lifetime") {
+                $endDate = Carbon::maxValue()->format('d-m-Y');
+            }
+
+            Membership::create([
+                'price' => $package->price,
+                'currency' => $be->base_currency_text ? $be->base_currency_text : "USD",
+                'currency_symbol' => $be->base_currency_symbol ? $be->base_currency_symbol : $be->base_currency_text,
+                'payment_method' => $request["payment_gateway"],
+                'transaction_id' => $transaction_id ? $transaction_id : 0,
+                'status' => 1,
+                'is_trial' => 0,
+                'trial_days' => 0,
+                'receipt' => $request["receipt_name"] ? $request["receipt_name"] : null,
+                'transaction_details' => null,
+                'settings' => json_encode($be),
+                'package_id' => $request['package_id'],
+                'user_id' => $request['id'],
+                'start_date' => Carbon::parse($startDate),
+                'expire_date' => Carbon::parse($endDate),
+            ]);
+            $package = Package::findOrFail($request['package_id']);
+        }
+
+        return response()->json(['success' =>  true], 200);
+    }
+
     public function registerUser($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));

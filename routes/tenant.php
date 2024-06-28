@@ -824,13 +824,14 @@ Route::group(['prefix' => 'pentaforce'], function () {
     Route::controller(\Pentaforce\CommunityManagementApiController::class)->prefix('community-management')->group(function () {
         // Registered Users
         Route::group(['prefix' => 'register-user'], function () {
+            Route::post('/create', 'registerUserCreate')->name('registerUserCreate');
             Route::get('/{crypt}', 'registerUser')->name('registerUser');
-            Route::post('email-st/{crypt}', 'registerUserEmailStatus')->name('registerUserEmailStatus');
-            Route::post('account-st/{crypt}', 'registerUserAccountStatus')->name('registerUserAccountStatus');
-            Route::post('login/{crypt}', 'registerUserLogin')->name('registerUserLogin');
-            Route::post('update/{crypt}', 'registerUserUpdate')->name('registerUserUpdate');
-            Route::post('delete/{crypt}', 'registerUserDelete')->name('registerUserDelete');
-            Route::post('password/{crypt}', 'registerUserPassword')->name('registerUserPassword');
+            Route::post('/email-st/{crypt}', 'registerUserEmailStatus')->name('registerUserEmailStatus');
+            Route::post('/account-st/{crypt}', 'registerUserAccountStatus')->name('registerUserAccountStatus');
+            Route::post('/login/{crypt}', 'registerUserLogin')->name('registerUserLogin');
+            Route::post('/update/{crypt}', 'registerUserUpdate')->name('registerUserUpdate');
+            Route::post('/delete/{crypt}', 'registerUserDelete')->name('registerUserDelete');
+            Route::post('/password/{crypt}', 'registerUserPassword')->name('registerUserPassword');
         });
         // Subscribers
         Route::group(['prefix' => 'subscriber'], function () {

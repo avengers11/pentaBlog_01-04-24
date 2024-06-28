@@ -108,7 +108,6 @@ class PostsApiController extends Controller
         ];
 
         $validator = Validator::make($request->all(), $rules, $message);
-
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
             $errorMessage = implode(', ', $errors);
