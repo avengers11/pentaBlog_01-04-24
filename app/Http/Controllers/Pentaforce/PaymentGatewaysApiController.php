@@ -21,16 +21,47 @@ class PaymentGatewaysApiController extends Controller
     public function onlineShow(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $data['paypal'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'paypal']])->first();
-        $data['stripe'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'stripe']])->first();
-        $data['paystack'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'paystack']])->first();
-        $data['paytm'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'paytm']])->first();
-        $data['flutterwave'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'flutterwave']])->first();
-        $data['instamojo'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'instamojo']])->first();
-        $data['mollie'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'mollie']])->first();
-        $data['razorpay'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'razorpay']])->first();
-        $data['mercadopago'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'mercadopago']])->first();
-        $data['anet'] = UserPaymentGeteway::where([['user_id', $user->id], ['keyword', 'authorize.net']])->first();
+
+        $data['paypal'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'paypal'],
+        );
+
+        $data['stripe'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'stripe'],
+        );
+
+        $data['paystack'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'paystack'],
+        );
+
+        $data['paytm'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'paytm'],
+        );
+
+        $data['flutterwave'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'flutterwave'],
+        );
+
+        $data['instamojo'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'instamojo'],
+        );
+
+        $data['mollie'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'mollie'],
+        );
+
+        $data['razorpay'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'razorpay'],
+        );
+
+        $data['mercadopago'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'mercadopago'],
+        );
+
+        $data['anet'] = UserPaymentGeteway::firstOrCreate(
+            ['user_id' => $user->id, 'keyword' => 'authorize.net'],
+        );
+
 
         return response()->json($data);
     }
