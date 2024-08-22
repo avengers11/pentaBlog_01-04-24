@@ -709,6 +709,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
         // post
         Route::get('/post/{crypt}', 'post')->name('post');
+        Route::get('/total-post/{crypt}', 'totalPost')->name('totalPost');
         Route::get('/post-create/{crypt}', 'postCreate')->name('postCreate');
         Route::post('/post-add/{crypt}', 'postAdd')->name('postAdd');
 

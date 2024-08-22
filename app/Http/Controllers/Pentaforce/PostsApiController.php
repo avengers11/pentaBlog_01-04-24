@@ -212,6 +212,18 @@ class PostsApiController extends Controller
 
         return response()->json($information);
     }
+    public function totalPost($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $languageId =   Language::where('is_default', 1)->where('user_id', $user->id)->pluck('id')->first();
+
+        return  DB::table('posts')
+        ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
+        ->where('post_contents.language_id', '=', $languageId)
+        ->where('post_contents.user_id', '=', $user->id)
+        ->orderByDesc('posts.id')
+        ->count();
+    }
     public function postCreate($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));

@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Http\Helpers\MegaMailer;
-use App\Models\BasicExtended;
-use App\Models\BasicSetting;
-use App\Models\User\UserCustomDomain;
-use Illuminate\Http\Request;
-use PHPMailer\PHPMailer\PHPMailer;
 use Session;
 use Validator;
+use App\Models\BasicSetting;
+use Illuminate\Http\Request;
+use App\Models\BasicExtended;
+use App\Http\Helpers\MegaMailer;
+use PHPMailer\PHPMailer\PHPMailer;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
+use App\Models\User\UserCustomDomain;
+use Auth;
 
 class CustomDomainController extends Controller
 {
@@ -89,6 +91,10 @@ class CustomDomainController extends Controller
                 ];
                 $mailer->mailFromAdmin($data);
             }
+            // call pentaforce api 
+            Http::get(env('PENTAFORCE_URL').'/user/blog/domain/confirmed-domain/'.$user->user);
+
+
         } elseif ($request->status == 2) {
             if (!empty($rcDomain->user)) {
                 $user = $rcDomain->user;
