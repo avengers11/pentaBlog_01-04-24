@@ -1225,9 +1225,9 @@ class SiteManagementApiController extends Controller
     public function domainShow($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
         $rcDomain = UserCustomDomain::where('status', '<>', 2)->where('user_id', $user->id)->orderBy('id', 'DESC')->first();
-        return $rcDomain;
+        
+        return response()->json(['domain' => $rcDomain, 'user' => $user]);
     }
     public function isValidDomain($domain_name) {
         return (preg_match("/^([a-zd](-*[a-zd])*)(.([a-zd](-*[a-zd])*))*$/i", $domain_name) //valid characters check
