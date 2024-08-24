@@ -47,7 +47,7 @@ class DashboardApiController extends Controller
         ->select('theme_version')
         ->first();
 
-        return $data;
+        return response()->json($data);
     }
 
     public function getPaymentLogs()
