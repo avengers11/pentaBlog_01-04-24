@@ -76,14 +76,14 @@ class CommunityManagementApiController extends Controller
             $user->save();
 
             BasicSetting::create([
-                'user_id' => $request['id'],
+                'user_id' => $user->id,
             ]);
             //create default payment gateway
             $payment_keywords = ['flutterwave', 'razorpay', 'paytm', 'paystack', 'instamojo', 'stripe', 'paypal', 'mollie', 'mercadopago', 'authorize.net'];
             foreach ($payment_keywords as $key => $value) {
                 UserPaymentGeteway::create([
                     'title' => null,
-                    'user_id' => $request['id'],
+                    'user_id' => $user->id,
                     'details' => null,
                     'keyword' => $value,
                     'subtitle' => null,
@@ -94,7 +94,7 @@ class CommunityManagementApiController extends Controller
             }
             //create default shop Settings
             UserShopSetting::create([
-                'user_id' => $request['id'],
+                'user_id' => $user->id,
                 'is_shop' => 1,
                 'catalog_mode' => 0,
                 'item_rating_system' => 1,
@@ -102,26 +102,26 @@ class CommunityManagementApiController extends Controller
             ]);
 
             $homeSection = new HomeSection();
-            $homeSection->user_id = $request['id'];
+            $homeSection->user_id = $user->id;
             $homeSection->save();
         }
 
         if ($user) {
             $deLang = Language::firstOrFail();
-            $langCount = Language::where('user_id', $request['id'])->where('is_default', 1)->count();
+            $langCount = Language::where('user_id', $user->id)->where('is_default', 1)->count();
             if ($langCount == 0) {
                 $lang = new User\Language;
                 $lang->name = 'English';
                 $lang->code = 'en';
                 $lang->is_default = 1;
                 $lang->rtl = 0;
-                $lang->user_id = $request['id'];
+                $lang->user_id = $user->id;
                 $lang->keywords = $deLang->keywords;
                 $lang->save();
 
                 $umenu = new Menu();
                 $umenu->language_id = $lang->id;
-                $umenu->user_id = $request['id'];
+                $umenu->user_id = $user->id;
                 $umenu->menus = '[{"text":"Home","href":"","icon":"empty","target":"_self","title":"","type":"home"},{"text":"About","href":"","icon":"empty","target":"_self","title":"","type":"about"},{"text":"Posts","href":"","icon":"empty","target":"_self","title":"","type":"posts"},{"text":"Gallery","href":"","icon":"empty","target":"_self","title":"","type":"gallery"},{"text":"FAQs","href":"","icon":"empty","target":"_self","title":"","type":"faq"},{"text":"Contact","href":"","icon":"empty","target":"_self","title":"","type":"contact"}]';
                 $umenu->save();
             }
@@ -153,7 +153,7 @@ class CommunityManagementApiController extends Controller
                 'transaction_details' => null,
                 'settings' => json_encode($be),
                 'package_id' => $request['package_id'],
-                'user_id' => $request['id'],
+                'user_id' => $user->id,
                 'start_date' => Carbon::parse($startDate),
                 'expire_date' => Carbon::parse($endDate),
             ]);
