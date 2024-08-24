@@ -68,6 +68,7 @@ class CustomDomainController extends Controller
     }
 
     public function status(Request $request) {
+        
         $rcDomain = UserCustomDomain::findOrFail($request->domain_id);
         $rcDomain->status = $request->status;
         $rcDomain->save();
@@ -76,7 +77,6 @@ class CustomDomainController extends Controller
         if ($request->status == 1) {
             if (!empty($rcDomain->user)) {
                 $user = $rcDomain->user;
-
                 $bs = BasicSetting::firstOrFail();
                 $mailer = new MegaMailer();
                 $data = [
@@ -91,8 +91,9 @@ class CustomDomainController extends Controller
                 ];
                 $mailer->mailFromAdmin($data);
             }
+
             // call pentaforce api 
-            Http::get(env('PENTAFORCE_URL').'/user/blog/domain/confirmed-domain/'.$user->user);
+            Http::get(env('PENTAFORCE_URL').'/user/blog/domain/confirmed-domain/'.$user->id);
 
 
         } elseif ($request->status == 2) {

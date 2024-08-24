@@ -826,6 +826,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
         // Registered Users
         Route::group(['prefix' => 'register-user'], function () {
             Route::post('/create', 'registerUserCreate')->name('registerUserCreate');
+            Route::get('/get-user', 'registerUserGetUser')->name('registerUserGetUser');
             Route::get('/{crypt}', 'registerUser')->name('registerUser');
             Route::post('/email-st/{crypt}', 'registerUserEmailStatus')->name('registerUserEmailStatus');
             Route::post('/account-st/{crypt}', 'registerUserAccountStatus')->name('registerUserAccountStatus');

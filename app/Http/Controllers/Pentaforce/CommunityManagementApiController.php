@@ -64,7 +64,7 @@ class CommunityManagementApiController extends Controller
         if ($user->count() == 0) {
 
             $user = new User;
-            $user->id = $request['id'];
+            // $user->id = $request['id'];
             $user->first_name = $request['first_name'];
             $user->last_name = $request['last_name'];
             $user->email = $request['email'];
@@ -160,7 +160,13 @@ class CommunityManagementApiController extends Controller
             $package = Package::findOrFail($request['package_id']);
         }
 
-        return response()->json(['success' =>  true], 200);
+        return response()->json($user);
+    }
+    public function registerUserGetUser(Request $request)
+    {
+        $user = User::where('username', $request->username)->first();
+
+        return response()->json(['user' => $user]);
     }
 
     public function registerUser($crypt)
