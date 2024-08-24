@@ -26,8 +26,8 @@ class DashboardApiController extends Controller
     // getDashboardData
     public function getDashboardData($crypt)
     {
-        return Crypt::decrypt($crypt);
         $user = User::find(Crypt::decrypt($crypt));
+        return $user;
         
         $data['user'] = $user;
         $langId = Language::where('user_id', $user->id)->where('is_default', 1)->firstOrFail()->id;
