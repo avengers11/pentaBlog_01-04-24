@@ -26,6 +26,7 @@ class DashboardApiController extends Controller
     // getDashboardData
     public function getDashboardData($crypt)
     {
+        return Crypt::decrypt($crypt);
         $user = User::find(Crypt::decrypt($crypt));
         
         $data['user'] = $user;
