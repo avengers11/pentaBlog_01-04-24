@@ -2,33 +2,34 @@
 
 namespace App\Http\Controllers\Pentaforce;
 
+use Session;
 use Exception;
 use Validator;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Package;
 use App\Models\Customer;
+use App\Models\User\Menu;
+use App\Models\Membership;
 use App\Models\User\Popup;
-use App\Models\User\BasicSetting;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\BasicExtended;
 use App\Models\User\Follower;
 use App\Models\User\Language;
 use App\Models\User\Subscriber;
+use App\Http\Helpers\MegaMailer;
+use App\Models\User\HomeSection;
+use App\Models\User\BasicSetting;
 use PHPMailer\PHPMailer\PHPMailer;
-use App\Models\User\UserShopSetting;
 use App\Http\Controllers\Controller;
+use App\Models\User\UserShopSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Storage;
 use App\Models\User\UserPaymentGeteway;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Helpers\UserPermissionHelper;
-use App\Models\User\HomeSection;
-use App\Http\Helpers\MegaMailer;
-use App\Models\User\Menu;
-use App\Models\Membership;
-use App\Models\Package;
-use Session;
 
 class CommunityManagementApiController extends Controller
 {
@@ -40,7 +41,7 @@ class CommunityManagementApiController extends Controller
     public function registerUserCreate(Request $request)
     {
         $rules = [
-            'username' => 'required|alpha_num|unique:users',
+            // 'username' => 'required|alpha_num|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|confirmed',
             'package_id' => 'required',
@@ -53,6 +54,8 @@ class CommunityManagementApiController extends Controller
             'online_status.required' => 'The publicly hidden field is required'
         ];
 
+        $username = $this->generateUniqueUsername();
+
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
@@ -60,7 +63,7 @@ class CommunityManagementApiController extends Controller
             return response()->json(['error' => $errorMessage], 422);
         }
 
-        $user = User::where('username', $request['username']);
+        $user = User::where('username', $username);
         if ($user->count() == 0) {
 
             $user = new User;
@@ -68,7 +71,7 @@ class CommunityManagementApiController extends Controller
             $user->first_name = $request['first_name'];
             $user->last_name = $request['last_name'];
             $user->email = $request['email'];
-            $user->username = $request['username'];
+            $user->username = $username;
             $user->password = bcrypt($request['password']);
             $user->online_status = $request["online_status"];
             $user->status = 1;
@@ -162,6 +165,17 @@ class CommunityManagementApiController extends Controller
 
         return response()->json($user);
     }
+
+    private function generateUniqueUsername()
+    {
+        do {
+            // Generate a random 5-character string
+            $username = Str::random(5);
+        } while (User::where('username', $username)->exists());
+
+        return $username;
+    }
+
     public function registerUserGetUser(Request $request)
     {
         $user = User::where('username', $request->username)->first();
