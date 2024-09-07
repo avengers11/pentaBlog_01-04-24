@@ -201,7 +201,7 @@ class PostsApiController extends Controller
     public function post(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $languageId =   Language::where('is_default', 1)->where('user_id', $user->id)->pluck('id')->first();
+        $languageId = Language::where('is_default', 1)->where('user_id', $user->id)->pluck('id')->first();
 
         $information['posts'] = DB::table('posts')
             ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
@@ -448,4 +448,12 @@ class PostsApiController extends Controller
         return response()->json(['success' => 'Post deleted successfully!'], 200);
     }
 
+    // postByCategory
+    public function postByCategory(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $languageId = Language::where('is_default', 1)->where('user_id', $user->id)->pluck('id')->first();
+
+        return PostContent::where("language_id", $languageId)->where("post_category_id", $request->category_id)->get();
+    }
 }

@@ -720,6 +720,8 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::get('/post-check', 'postCheck')->name('postCheck');
         Route::post('/post-delete/{crypt}', 'postDelete')->name('postDelete');
 
+        Route::get('/category-post/{crypt}', 'postByCategory')->name('postByCategory');
+
     });
 
     //Site Management
