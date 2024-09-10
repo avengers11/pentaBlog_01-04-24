@@ -24,9 +24,19 @@
                             </div>
                         @else
                             <div class="logo mb-20">
-                                <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}"
-                                    target="_self">
-                                    <img class="lazyload" src="{{ asset('assets/user/img/themes/default_dark.png') }}" data-src="{{ asset('assets/user/img/themes/default_dark.png') }}" alt="Logo">
+                                <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}" target="_self">
+                                    @if ($websiteInfo->text_to_logo_status == 1)
+                                        <h2 class="logo-txt">{{$websiteInfo->text_to_logo}}</h2>
+                                    @else
+                                        @if ($websiteInfo->logo)
+                                            <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                                alt="{{ $websiteInfo->website_title }}"
+                                                src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
+                                        @else
+                                            <img class="text-white" data-src="{{ asset('assets/user/img/themes/default_dark.png') }}"
+                                                alt="Logo" src="{{ asset('assets/user/img/themes/default_dark.png') }}">
+                                        @endif
+                                    @endif
                                 </a>
                             </div>
                         @endif
