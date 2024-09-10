@@ -12,15 +12,18 @@
             <!-- Mobile Logo -->
             @if (!is_null($websiteInfo))
                 <div class="logo">
-                    <a href="{{ route('front.user.detail.view', getParam()) }}" target="_self"
-                        title="{{ $websiteInfo->website_title }}">
-                        @if ($websiteInfo->logo)
-                            <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
-                                alt="{{ $websiteInfo->website_title }}"
-                                src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
+                    <a href="{{ route('front.user.detail.view', getParam()) }}" target="_self" title="{{ $websiteInfo->website_title }}">
+                        @if ($websiteInfo->text_to_logo_status == 1)
+                            <h2 class="logo-txt">{{$websiteInfo->text_to_logo}}</h2>
                         @else
-                            <img class="text-white" data-src="{{ asset('assets/user/img/themes/default_dark.png') }}"
-                                alt="Logo" src="{{ asset('assets/user/img/themes/default_dark.png') }}">
+                            @if ($websiteInfo->logo)
+                                <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                    alt="{{ $websiteInfo->website_title }}"
+                                    src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
+                            @else
+                                <img class="text-white" data-src="{{ asset('assets/user/img/themes/default_dark.png') }}"
+                                    alt="Logo" src="{{ asset('assets/user/img/themes/default_dark.png') }}">
+                            @endif
                         @endif
                     </a>
                 </div>
