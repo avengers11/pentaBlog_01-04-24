@@ -5,11 +5,7 @@
       <div class="brand_logo">
         @if (!is_null($websiteInfo))
           <a href="{{route('front.user.detail.view', getParam())}}">
-            @php
-                echo $websiteInfo;
-            @endphp
-            
-              <img data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website logo">
+            <img data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website logo">
           </a>
         @endif
       </div>

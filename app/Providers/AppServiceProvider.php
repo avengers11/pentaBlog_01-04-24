@@ -169,7 +169,7 @@ class AppServiceProvider extends ServiceProvider
 
                 $websiteInfo = DB::table('user_basic_settings')
                     ->where('user_id', $user->id)
-                    ->select('favicon', 'preloader', 'preloader_status', 'website_title', 'logo', 'support_email', 'support_contact', 'address', 'primary_color', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'breadcrumb_overlay_color', 'breadcrumb_overlay_opacity', 'theme_version', 'measurement_id', 'analytics_status')
+                    ->select('favicon', 'preloader', 'preloader_status', 'website_title', 'logo', 'support_email', 'support_contact', 'address', 'primary_color', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'breadcrumb_overlay_color', 'breadcrumb_overlay_opacity', 'theme_version', 'measurement_id', 'analytics_status', 'text_to_logo', 'text_to_logo_status')
                     ->first();
                 $popups = User\Popup::where('user_id',$user->id)
                     ->where('language_id',$userCurrentLang->id)
