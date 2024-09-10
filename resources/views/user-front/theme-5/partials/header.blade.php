@@ -41,15 +41,18 @@
             <nav class="navbar navbar-expand-lg">
                 <!-- Logo -->
                 @if (!is_null($websiteInfo))
-                    <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}" target="_self"
-                        title="{{ $websiteInfo->website_title }}">
-                        @if ($websiteInfo->logo)
-                            <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
-                                alt="{{ $websiteInfo->website_title }}"
-                                src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
+                    <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}" target="_self" title="{{ $websiteInfo->website_title }}">
+                        @if ($websiteInfo->text_to_logo_status == 1)
+                            <h2 class="logo-txt">{{$websiteInfo->text_to_logo}}</h2>
                         @else
-                            <img class="text-white" src="{{ asset('assets/user/img/themes/default_dark.png') }}"
-                                alt="Logo">
+                            @if ($websiteInfo->logo)
+                                <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                    alt="{{ $websiteInfo->website_title }}"
+                                    src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
+                            @else
+                                <img class="text-white" data-src="{{ asset('assets/user/img/themes/default_dark.png') }}"
+                                    alt="Logo" src="{{ asset('assets/user/img/themes/default_dark.png') }}">
+                            @endif
                         @endif
                     </a>
                 @endif
