@@ -24,7 +24,18 @@
                                     </a>
                                 </div>
                             @else
-                                <img data-src="{{ asset('assets/user/img/themes/default_6.png') }}" src="{{ asset('assets/user/img/themes/default_6.png') }}" alt="Log">
+                                @if ($websiteInfo->text_to_logo_status == 1)
+                                    <h2 class="logo-txt">{{$websiteInfo->text_to_logo}}</h2>
+                                @else
+                                    @if ($websiteInfo->logo)
+                                        <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                            alt="{{ $websiteInfo->website_title }}"
+                                            src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
+                                    @else
+                                        <img class="text-white" data-src="{{ asset('assets/user/img/themes/default_dark.png') }}"
+                                            alt="Logo" src="{{ asset('assets/user/img/themes/default_dark.png') }}">
+                                    @endif
+                                @endif
                             @endif
                             <p>
                                 {{ !is_null($footerInfo) ? $footerInfo->about_company : '' }}
