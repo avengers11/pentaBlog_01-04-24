@@ -7,15 +7,18 @@
                     <div class="footer-widget" data-aos-delay="100">
                         @if (!is_null($footerInfo))
                             <div class="logo mb-20">
-                                <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}"
-                                    target="_self" title="{{ $websiteInfo->website_title }}">
-                                    @if($footerInfo->logo)
-                                    <img class="lazyload"
-                                        src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
-                                        data-src="{{ $footerInfo->logo != null ? Storage::url($footerInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
-                                        alt="{{ $websiteInfo->website_title }}">
+                                <a class="navbar-brand" href="{{ route('front.user.detail.view', getParam()) }}" target="_self" title="{{ $websiteInfo->website_title }}">
+                                    @if ($websiteInfo->text_to_logo_status == 1)
+                                        <h2 class="logo-txt">{{$websiteInfo->text_to_logo}}</h2>
                                     @else
-                                        <img data-src="{{ asset('assets/user/img/themes/default_dark.png') }}" src="{{ asset('assets/user/img/themes/default_dark.png') }}" alt="Logo">
+                                        @if ($websiteInfo->logo)
+                                            <img class="lazyload" data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}"
+                                                alt="{{ $websiteInfo->website_title }}"
+                                                src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}">
+                                        @else
+                                            <img class="text-white" data-src="{{ asset('assets/user/img/themes/default_dark.png') }}"
+                                                alt="Logo" src="{{ asset('assets/user/img/themes/default_dark.png') }}">
+                                        @endif
                                     @endif
                                 </a>
                             </div>
