@@ -180,6 +180,10 @@ class BasicSettingsController extends Controller
             'primary_color' => ltrim($request->primary_color, '#'),
             'breadcrumb_overlay_color' => ltrim($request->breadcrumb_overlay_color, '#'),
             'breadcrumb_overlay_opacity' => $request->breadcrumb_overlay_opacity,
+
+            // logo to txt 
+            'text_to_logo' => $request->text_to_logo,
+            'text_to_logo_status' => $request->text_to_logo_status,
         ]);
 
         return response()->json(['success' => 'Website appearance updated successfully!']);

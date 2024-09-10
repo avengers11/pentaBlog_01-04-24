@@ -33,8 +33,11 @@ class BasicSetting extends Model
         'tawkto_status',
         'tawkto_direct_chat_link',
         'hero_section_bg_image',
-        'news_letter_section_bg_image'
-
+        'news_letter_section_bg_image',
+        'news_letter_section_bg_image',
+        'news_letter_section_bg_image',
+        'text_to_logo',
+        'text_to_logo_status',
     ];
 
     public function language(){
