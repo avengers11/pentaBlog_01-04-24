@@ -6,7 +6,7 @@
         @if (!is_null($websiteInfo))
           <a href="{{route('front.user.detail.view', getParam())}}">
             @php
-                print_r($websiteInfo);
+                echo $websiteInfo;
             @endphp
             
               <img data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website logo">
