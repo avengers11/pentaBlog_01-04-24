@@ -6,11 +6,7 @@
         <div class="brand_logo">
           @if (!is_null($websiteInfo))
             <a href="{{route('front.user.detail.view', getParam())}}">
-              @if ($websiteInfo->text_to_logo_status == 1)
-                <h2 class="logo-txt">{{$websiteInfo->text_to_logo}}</h2>
-              @else
-                <img data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website logo">
-              @endif
+              <img data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/user/img/lgoo.png') }}" class="img-fluid lazy" alt="website logo">
             </a>
           @endif
         </div>
