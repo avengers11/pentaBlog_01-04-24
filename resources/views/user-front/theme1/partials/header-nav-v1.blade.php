@@ -8,7 +8,7 @@
             @if ($websiteInfo->text_to_logo_status == 1)
               <h2 class="logo-txt">{{$websiteInfo->text_to_logo}}</h2>
             @else
-              <img data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website logo">
+              <img data-src="{{ $websiteInfo->logo != null ? Storage::url($websiteInfo->logo) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="website logo sss">
             @endif
           </a>
         @endif
