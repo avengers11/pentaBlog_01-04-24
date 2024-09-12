@@ -299,9 +299,10 @@ class PostsApiController extends Controller
         $post->slider_images = json_encode([$request->galleries]);
         $post->serial_number = $request->serial_number;
         $post->user_id = $user->id;
+        $post->is_slider = 1;
         $post->save();
 
-        foreach ($languages as $language) {
+        foreach ($languages as $language) { 
             $postContent = new PostContent();
             $postContent->language_id = $language->id;
             $postContent->user_id = $user->id;
