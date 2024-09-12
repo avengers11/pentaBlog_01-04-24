@@ -82,9 +82,9 @@ class PostsApiController extends Controller
 
         $count = LimitCheckerHelper::currentPostCategoryCount($user->id, $request->user_language_id);//category added count of selected language
         $category_limit = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit
-        if($count >= $category_limit){
-            return response()->json(['success' => 'Post Category Limit Exceeded!'], 200);
-        }
+        // if($count >= $category_limit){
+        //     return response()->json(['success' => 'Post Category Limit Exceeded!'], 200);
+        // }
 
         $theme = BasicSetting::where('user_id', $user->id)->first()->theme_version;
 
