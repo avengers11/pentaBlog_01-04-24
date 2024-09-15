@@ -98,6 +98,7 @@ class DashboardApiController extends Controller
     {
         $data['user'] = User::find(Crypt::decrypt($crypt));
         $data['basic'] = BasicSetting::where('user_id', $data['user']->id)->first();
+        $data['lang'] = Language::where('is_default', 1)->where('user_id', $data['user']->id)->first();
 
         return $data;
     }

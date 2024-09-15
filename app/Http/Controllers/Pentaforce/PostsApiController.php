@@ -242,11 +242,11 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $count = LimitCheckerHelper::currentPostsCount($user->id);//count of current package
-        $limit = LimitCheckerHelper::postsLimit($user->id);//limit count of current package
-        if($count >= $limit){
-            return response()->json(['warning' => 'Post Limit Exceeded!'], 200);
-        }
+        // $count = LimitCheckerHelper::currentPostsCount($user->id);//count of current package
+        // $limit = LimitCheckerHelper::postsLimit($user->id);//limit count of current package
+        // if($count >= $limit){
+        //     return response()->json(['warning' => 'Post Limit Exceeded!'], 200);
+        // }
 
         $rules = [
             'serial_number' => 'required'
@@ -301,6 +301,7 @@ class PostsApiController extends Controller
         $post->user_id = $user->id;
         $post->save();
 
+        $slugArray = [];
         foreach ($languages as $language) {
             $postContent = new PostContent();
             $postContent->language_id = $language->id;
@@ -314,9 +315,19 @@ class PostsApiController extends Controller
             $postContent->meta_keywords = $request[$language->code . '_meta_keywords'];
             $postContent->meta_description = $request[$language->code . '_meta_description'];
             $postContent->save();
+
+            $slugArray[] =
+            [
+                $language->code => make_slug($request[$language->code . '_title'])
+            ];
         }
 
-        return response()->json(['success' => 'Post added successfully!', 'id' => $post->id], 200);
+        $postPassingData = [
+            'post_id' => $post->id,
+            "post_slug" => $slugArray
+        ];
+
+        return response()->json(['status' => true, 'success' => 'Post added successfully!', "post_data" => $postPassingData], 200);
     }
     public function postEdit($crypt, Request $request)
     {
