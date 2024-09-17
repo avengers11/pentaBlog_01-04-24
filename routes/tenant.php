@@ -715,6 +715,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
 
         Route::get('/post-edit/{crypt}', 'postEdit')->name('postEdit');
         Route::post('/post-update/{crypt}', 'postUpdate')->name('postUpdate');
+        Route::post('/post-slider-update/{crypt}', 'postSliderUpdate')->name('postSliderUpdate');
 
         Route::post('/post-update-content', 'postUpdateContent')->name('postUpdateContent');
         Route::get('/post-check', 'postCheck')->name('postCheck');

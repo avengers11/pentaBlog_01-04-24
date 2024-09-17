@@ -415,6 +415,15 @@ class PostsApiController extends Controller
 
         return response()->json(['success' => 'Post updated successfully!', 'id' => $post->id], 200);
     }
+    public function postSliderUpdate(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $post = Post::where('id', $request->post_id)->where('user_id', $user->id)->first();
+        $post->is_slider = $post->is_slider == 1 ? 0 : 1;
+        $post->save();
+
+        return response()->json(['status' => true, 'message' => 'Post slider update successfully!'], 200);
+    }
     // postCheck
     public function postCheck(Request $request)
     {
