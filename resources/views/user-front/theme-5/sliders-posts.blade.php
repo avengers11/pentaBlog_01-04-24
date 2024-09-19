@@ -9,9 +9,7 @@
                             <article class="blog blog_v1 radius-md">
                                 <div class="blog_img">
                                     <div class="lazy-container ratio ratio-1-3">
-                                        <img class="lazyload"
-                                            data-src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}"
-                                            alt="{{ $sliderPost->title }}">
+                                        <img class="lazyload" data-src="{{ $sliderPost->slider_post_image != null ? Storage::url($sliderPost->slider_post_image) : asset('assets/admin/img/noimage.jpg') }}" alt="{{ $sliderPost->title }}">
                                     </div>
                                 </div>
                                 <div class="blog_content p-20">
