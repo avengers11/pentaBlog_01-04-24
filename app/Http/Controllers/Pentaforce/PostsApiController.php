@@ -68,7 +68,7 @@ class PostsApiController extends Controller
         // then, get the post categories of that language from db
         $information['categories'] = PostCategory::where('language_id', $language->id)
             ->where('user_id', $user->id)
-            ->orderBy('id', 'desc')
+            ->orderBy('serial_number', 'desc')
             ->get();
 
         // also, get all the languages from db
@@ -79,34 +79,28 @@ class PostsApiController extends Controller
     public function categoryAdd(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
-        $count = LimitCheckerHelper::currentPostCategoryCount($user->id, $request->user_language_id);//category added count of selected language
-        $category_limit = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit
-        // if($count >= $category_limit){
-        //     return response()->json(['success' => 'Post Category Limit Exceeded!'], 200);
-        // }
-
         $theme = BasicSetting::where('user_id', $user->id)->first()->theme_version;
+        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
+
+        $maxSerialNumber = PostCategory::where('language_id', $language->id)
+        ->where('user_id', $user->id)
+        ->orderBy('serial_number', 'desc')
+        ->pluck("serial_number")
+        ->first();
 
         $rules = [
             'user_language_id' => 'required',
             'name' => 'required',
             'status' => 'required',
-            'serial_number' => 'required'
         ];
-
         if ($theme == 1 || $theme == 6 || $theme == 7) {
             $rules['image'] = 'required';
         }
-
-
         $message = [
             'user_language_id.required' => 'The language field is required.',
             'name.required' => 'The category name is required.',
             'status.required' => 'The status field is required.',
-            'serial_number.required' => 'The serial number field is required.'
         ];
-
         $validator = Validator::make($request->all(), $rules, $message);
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
@@ -117,12 +111,13 @@ class PostsApiController extends Controller
         if ($theme == 1 || $theme == 6 || $theme == 7) {
             $imgName = $request->image;
         }
-
+        
+        $request["serial_number"] = $maxSerialNumber+1;
         PostCategory::create($request->except('image','language_id','user_id') + [
-                'language_id' => $request->user_language_id,
-                'image' => $theme == 1 || $theme == 6 || $theme == 7 ? $imgName : NULL,
-                'user_id' => $user->id
-            ]);
+            'language_id' => $request->user_language_id,
+            'image' => $theme == 1 || $theme == 6 || $theme == 7 ? $imgName : NULL,
+            'user_id' => $user->id
+        ]);
 
         return response()->json(['success' => 'New post category added successfully!'], 200);
     }

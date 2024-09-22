@@ -409,9 +409,10 @@ if (!function_exists('showAd')) {
             }
 
             if ($ad->ad_type == 'banner') {
-                $markUp = '<a href="' . url($ad->url) . '" target="_blank" onclick="adView(' . $ad->id . ')">
-          <img src="' . asset('assets/user/img/advertisements/' . $ad->image) . '" alt="advertisement" style="max-width: 100%;">
-        </a>';
+                $image = $ad->image != null ? Storage::url($ad->image) : asset('assets/admin/img/noimage.jpg');
+                $markUp =   '<a href="' . url($ad->url) . '" target="_blank" onclick="adView(' . $ad->id . ')">
+                                <img src="'.$image.'" alt="advertisement" style="max-width: 100%;">
+                            </a>';
 
                 return $markUp;
             } else {

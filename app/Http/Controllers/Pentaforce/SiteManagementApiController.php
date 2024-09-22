@@ -110,15 +110,13 @@ class SiteManagementApiController extends Controller
         $rules = [
             'user_language_id' => 'required',
             'name' => 'required',
-            'status' => 'required',
-            'serial_number' => 'required'
+            'status' => 'required'
         ];
 
         $message = [
             'user_language_id.required' => 'The language field is required.',
             'name.required' => 'The name field is required.',
-            'status.required' => 'The status field is required.',
-            'serial_number.required' => 'The serial number field is required.'
+            'status.required' => 'The status field is required.'
         ];
 
         $validator = Validator::make($request->all(), $rules, $message);
@@ -128,11 +126,25 @@ class SiteManagementApiController extends Controller
             return response()->json(['error' => $errorMessage], 422);
         }
 
+        // then, get the post categories of that language from db
+        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
+        $maxSerialNumber = GalleryCategory::where('language_id', $language->id)
+        ->where('user_id', $user->id)
+        ->orderBy('serial_number', 'desc')
+        ->pluck("serial_number")
+        ->first();
+
+        if($request->serial_number == '0'){
+            $serial_number = $maxSerialNumber+1;
+        }else{
+            $serial_number = $request->serial_number;
+        }
+
         $dataType['user_id'] = $user->id;
         $dataType['language_id'] = $request->user_language_id;
         $dataType['name'] = $request->name;
         $dataType['status'] = $request->status;
-        $dataType['serial_number'] = $request->serial_number;
+        $dataType['serial_number'] = $serial_number;
 
         GalleryCategory::create($dataType);
 
@@ -193,7 +205,6 @@ class SiteManagementApiController extends Controller
             'video_link' => 'required_if:item_type,video',
             'language_id' => 'required',
             'title' => 'required',
-            'serial_number' => 'required',
             'image' => 'required',
         ];
 
@@ -201,7 +212,6 @@ class SiteManagementApiController extends Controller
             'language_id.required' => 'The language field is required.',
             'video_link.required_if' => 'The video link field is required.',
             'title.required' => 'The title field is required.',
-            'serial_number.required' => 'The serial number field is required.',
             'image.required' => 'The image field is required.',
         ];
 
@@ -267,6 +277,20 @@ class SiteManagementApiController extends Controller
             }
         }
 
+        // then, get the post categories of that language from db
+        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
+        $maxSerialNumber = GalleryItem::where('language_id', $language->id)
+        ->where('user_id', $user->id)
+        ->orderBy('serial_number', 'desc')
+        ->pluck("serial_number")
+        ->first();
+
+        if($request->serial_number == '0'){
+            $serial_number = $maxSerialNumber+1;
+        }else{
+            $serial_number = $request->serial_number;
+        }
+
         $galleryItem =  GalleryItem::where('id', $request->id)->where('user_id', $user->id)->first();
         if($request->image != null){
             $img = $request->image;
@@ -280,7 +304,7 @@ class SiteManagementApiController extends Controller
         $galleryItem->item_type = $request->item_type == 'image' ? 'image' : 'video';
         $galleryItem->image = $img;
         $galleryItem->video_link = $request->filled('video_link') ? $link : null;
-        $galleryItem->serial_number = $request->serial_number;
+        $galleryItem->serial_number = $serial_number;
         $galleryItem->gallery_category_id = $request->gallery_category_id;
         $galleryItem->title = $request->title;
         $galleryItem->is_featured = $request->is_featured;
@@ -333,15 +357,13 @@ class SiteManagementApiController extends Controller
         $rules = [
             'question' => 'required',
             'user_language_id' => 'required',
-            'answer' => 'required',
-            'serial_number' => 'required'
+            'answer' => 'required'
         ];
 
         $messages = [
             'user_language_id.required' => 'The language field is required.',
             'question.required' => 'The question field is required',
-            'answer.required' => 'The answer field is required',
-            'serial_number.required' => 'The serial number field is required',
+            'answer.required' => 'The answer field is required'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -351,12 +373,25 @@ class SiteManagementApiController extends Controller
             return response()->json(['error' => $errorMessage], 422);
         }
 
+        // then, get the post categories of that language from db
+        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
+        $maxSerialNumber = FAQ::where('language_id', $language->id)
+        ->where('user_id', $user->id)
+        ->orderBy('serial_number', 'desc')
+        ->pluck("serial_number")
+        ->first();
+        if($request->serial_number == '0'){
+            $serial_number = $maxSerialNumber+1;
+        }else{
+            $serial_number = $request->serial_number;
+        }
+
         FAQ::create([
             'language_id' => $request->user_language_id,
             'user_id' => $user->id,
             'question' => $request->question,
             'answer' => $request->answer,
-            'serial_number' => $request->serial_number
+            'serial_number' => $serial_number
         ]);
 
         return response()->json(['success' => 'New FAQ added successfully!'], 200);
@@ -532,11 +567,6 @@ class SiteManagementApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $count = LimitCheckerHelper::currentLanguageCount($user->id); //category added count of current package
-        $category_limit = LimitCheckerHelper::languagesLimit($user->id); //category limit count of current package
-        if ($count >= $category_limit) {
-            return response()->json(['error' => 'Language Limit Exceeded'], 200);
-        }
         $rules = [
             'name' => 'required|max:255',
             'code' => [
@@ -594,14 +624,7 @@ class SiteManagementApiController extends Controller
     public function languageUpdate(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
-        $langCount = Language::where('user_id', $user->id)->count();
-        $langLimit = UserPermissionHelper::currentPackagePermission($user->id)->language_limit;
-        if ($langCount > $langLimit) {
-            return response()->json(['error' => "You have to delete " . ($langCount - $langLimit) . " languages to enable Editing Feature of Languages."], 200);
-        }
         $language = Language::findOrFail($request->language_id);
-        // dd($language->id);
 
         $rules = [
             'name' => 'required|max:255',
@@ -814,12 +837,6 @@ class SiteManagementApiController extends Controller
     public function languageKeywordsUpdate(Request $request, $id, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
-        $langCount = Language::where('user_id', $user->id)->count();
-        $langLimit = UserPermissionHelper::currentPackagePermission($user->id)->language_limit;
-        if ($langCount > $langLimit) {
-            return response()->json(['warning' => "You have to delete " . ($langCount - $langLimit) . " languages to enable Editing Feature of Languages."], 200);
-        }
         $lang = Language::findOrFail($id);
         $keywords = $request->all();
         $lang->keywords = json_encode($keywords[0]);

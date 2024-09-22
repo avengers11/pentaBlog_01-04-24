@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Pentaforce;
 
-use App\Http\Controllers\Controller;
-use Auth;
-use Validator;
-use Illuminate\Support\Facades\Hash;
 use App;
-use App\Models\Membership;
-use App\Models\Package;
-use App\Models\User;
-use App\Models\User\Follower;
-use App\Models\User\Language;
-use App\Models\User\Post;
-use Carbon\Carbon;
+use Auth;
 use Crypt;
 use Session;
-use App\Models\User\BasicSetting;
+use Validator;
+use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Package;
 use App\Models\Customer;
+use App\Models\User\Post;
+use App\Models\Membership;
+use App\Models\User\Follower;
+use App\Models\User\Language;
 use App\Models\User\Subscriber;
+use App\Models\User\BasicSetting;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User\UserCustomDomain;
 
 class DashboardApiController extends Controller
 {
@@ -27,10 +28,10 @@ class DashboardApiController extends Controller
     public function getDashboardData($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        
+
+        $data['rcDomain'] = UserCustomDomain::where('status', '<>', 2)->where('user_id', $user->id)->orderBy('id', 'DESC')->first();
         $data['user'] = $user;
         $langId = Language::where('user_id', $user->id)->where('is_default', 1)->firstOrFail()->id;
-
         $data['subscs'] = Subscriber::where('user_id', $user->id)->orderBy('id', 'DESC')->get();
         $data['subscs_count'] = Subscriber::where('user_id', $user->id)->count();
 

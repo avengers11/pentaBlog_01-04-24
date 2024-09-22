@@ -80,12 +80,12 @@
                   <div class="gallery-img">
                     @if ($item->item_type == 'image')
                       <a href="{{ asset('assets/user/img/gallery/' . $item->image) }}" class="img-popup">
-                        <img src="{{ asset('assets/user/img/gallery/' . $item->image) }}" alt="image">
+                        <img src="{{ $item->image != null ? Storage::url($item->image) : asset('assets/admin/img/noimage.jpg') }}" alt="image">
                         <i class="fas fa-image"></i>
                       </a>
                     @else
                       <a href="{{ $item->video_link }}" class="img-popup mfp-iframe">
-                        <img src="{{ asset('assets/user/img/gallery/' . $item->image) }}" alt="image">
+                        <img src="{{ $item->image != null ? Storage::url($item->image) : asset('assets/admin/img/noimage.jpg') }}" alt="image">
                         <i class="fas fa-play"></i>
                       </a>
                     @endif
