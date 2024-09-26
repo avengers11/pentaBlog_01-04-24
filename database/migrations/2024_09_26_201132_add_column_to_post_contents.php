@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnToUserBasicSettings extends Migration
+class AddColumnToPostContents extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,8 @@ class AddColumnToUserBasicSettings extends Migration
      */
     public function up()
     {
-        Schema::table('user_basic_settings', function (Blueprint $table) {
+        Schema::table('post_contents', function (Blueprint $table) {
+            $table->text('meta_keyword_ids')->nullable();
         });
     }
 
@@ -24,9 +25,8 @@ class AddColumnToUserBasicSettings extends Migration
      */
     public function down()
     {
-        Schema::table('user_basic_settings', function (Blueprint $table) {
-            $table->dropColumn('text_to_logo');
-            $table->dropColumn('text_to_logo_status');
+        Schema::table('post_contents', function (Blueprint $table) {
+            //
         });
     }
 }

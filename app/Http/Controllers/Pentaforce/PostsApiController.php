@@ -54,24 +54,18 @@ class PostsApiController extends Controller
     public function category(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
-        // first, get the language info from db
         $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
         $information['language'] = $language;
 
-        $information['count'] = LimitCheckerHelper::currentPostCategoryCount($user->id, $language->id);//category added count of selected language
-        $information['category_limit'] = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit
+        $information['categories'] = PostCategory::where('post_categories.user_id', $user->id)
+        ->join('user_languages', 'post_categories.language_id', '=', 'user_languages.id')
+        ->orderBy('post_categories.serial_number', 'desc')
+        ->get([
+            'post_categories.*', 
+            DB::raw('user_languages.name as user_languages')
+        ]);
 
-        $information['categoryCount'] = PostCategory::where('user_id', $user->id)->count();
-        $information['categoryLimit'] = UserPermissionHelper::currentPackagePermission($user->id)->post_categories_limit;
 
-        // then, get the post categories of that language from db
-        $information['categories'] = PostCategory::where('language_id', $language->id)
-            ->where('user_id', $user->id)
-            ->orderBy('serial_number', 'desc')
-            ->get();
-
-        // also, get all the languages from db
         $information['langs'] = Language::where('user_id', $user->id)->get();
 
         return $information;
@@ -80,10 +74,8 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
         $theme = BasicSetting::where('user_id', $user->id)->first()->theme_version;
-        $language = Language::where('user_id', $user->id)->where('is_default', 1)->first();
 
-        $maxSerialNumber = PostCategory::where('language_id', $language->id)
-        ->where('user_id', $user->id)
+        $maxSerialNumber = PostCategory::where('user_id', $user->id)
         ->orderBy('serial_number', 'desc')
         ->pluck("serial_number")
         ->first();
@@ -124,13 +116,6 @@ class PostsApiController extends Controller
     public function categoryUpdate(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
-        $count = LimitCheckerHelper::currentPostCategoryCount($user->id, $request->user_language_id);//category added count of selected language
-        $category_limit = LimitCheckerHelper::postCategoriesLimit($user->id);//category limit
-        if($count >= $category_limit){
-            return response()->json(['success' => 'Post Category Limit Exceeded!'], 200);
-        }
-
         $theme = BasicSetting::where('user_id', $user->id)->first()->theme_version;
 
         $rules = [
@@ -223,104 +208,127 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
+        $information['languages'] = Language::where('user_id', $user->id)->get();
+        $information['feature_language'] = Language::where('is_default', 1)->where('user_id', $user->id)->first();
 
-        $categories = [];
-        foreach ($data["langs"] as $value) {
-            $categories[$value->code] = PostCategory::where('user_id', $user->id)->where('language_id', $value->id)->get();
+        $information['categories'] = PostCategory::where('user_id', $user->id)
+        ->where('language_id', $information['feature_language']->id)
+        ->get();
+        
+        if(!Post::where('user_id', $user->id)->where('is_featured', 10)->exists()){
+            $latestPost = Post::where('user_id', $user->id)->latest()->first();
+
+            $post = new Post();
+            $post->slider_images = json_encode([]);
+            $post->thumbnail_image = 'thumbnail_image.png';
+            $post->serial_number = $latestPost->serial_number + 1;
+            $post->is_featured = 10;
+            $post->user_id = $user->id;
+            $post->save();
+            foreach ($information['languages'] as $language) {
+                $postContent = new PostContent();
+                $postContent->language_id = $language->id;
+                $postContent->user_id = $user->id;
+                $postContent->post_id = $post->id;
+                $postContent->post_category_id = 0;
+                $postContent->title = "";
+                $postContent->slug = "";
+                $postContent->author = "";
+                $postContent->content = "";
+                $postContent->save();
+            }
         }
-        $data['categories'] = $categories;
+        $information["post"] = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
 
-        return response()->json($data);
+        return response()->json($information);
     }
-    public function postAdd(Request $request, $crypt)
+    // save 
+    public function postSave(Request $req, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $post = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
+
+        $postContent = PostContent::where('user_id', $user->id)->where('language_id', $req->language_id)->where('post_id', $post->id)->first();
+        $postContent->post_category_id = $req->post_category_id;
+        $postContent->title = $req->title;
+        $postContent->slug = make_slug($req->title);
+        $postContent->author = $req->author;
+        $postContent->content = Purifier::clean($req->content);
+        $postContent->meta_keywords = $req->meta_keywords;
+        $postContent->meta_keyword_ids = $req->meta_keyword_ids;
+        $postContent->meta_description = $req->meta_description;
+        $postContent->save();
+
+        return response()->json(['status' => true, 'message' => 'Post successfully saved!'], 200);
+    }
+    // postAddImagesUpload
+    public function postAddImagesUpload(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $post = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
+
+        if($request->thumbnail_image != null){
+            $post->thumbnail_image = $request->thumbnail_image;
+        }
+        if($request->slider_images != null){
+            $post->slider_images = json_encode([$request->slider_images]);
+        }
+        $post->save();
+
+        return response()->json(['status' => true, 'message' => 'Post images successfully updated!'], 200);
+    }
+
+    public function postCreatePerticles($crypt, Request $req)
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        // $count = LimitCheckerHelper::currentPostsCount($user->id);//count of current package
-        // $limit = LimitCheckerHelper::postsLimit($user->id);//limit count of current package
-        // if($count >= $limit){
-        //     return response()->json(['warning' => 'Post Limit Exceeded!'], 200);
-        // }
+        $information['languages'] = Language::where('user_id', $user->id)->get();
+        $information['feature_language'] = Language::where('is_default', 1)->where('user_id', $user->id)->first();
 
-        $rules = [
-            'serial_number' => 'required'
-        ];
-
-        $languages = Language::where('user_id', $user->id)->get();
-
-        $messages = [];
-        foreach ($languages as $language) {
-            $slug = make_slug($request[$language->code . '_title']);
-            $rules[$language->code . '_title'] = [
-                'required',
-                'max:255',
-                function ($attribute, $value, $fail) use ($slug, $language, $user) {
-                    $pcs = PostContent::where('user_id', $user->id)->get();
-                    foreach ($pcs as $key => $pc) {
-                        if (strtolower($slug) == strtolower($pc->slug)) {
-                            $fail('The title field must be unique for ' . $language->name . ' language.');
-                        }
-                    }
-                }
-            ];
-            $rules[$language->code . '_category'] = 'required';
-            $rules[$language->code . '_author'] = 'required';
-            $rules[$language->code . '_content'] = 'required|min:15';
-
-            $messages[$language->code . '_title.required'] = 'The title field is required for ' . $language->name . ' language.';
-
-            $messages[$language->code . '_title.max'] = 'The title field cannot contain more than 255 characters for ' . $language->name . ' language.';
-
-            $messages[$language->code . '_category.required'] = 'The category field is required for ' . $language->name . ' language.';
-
-            $messages[$language->code . '_author.required'] = 'The author field is required for ' . $language->name . ' language.';
-
-            $messages[$language->code . '_content.required'] = 'The content field is required for ' . $language->name . ' language.';
-
-            $messages[$language->code . '_content.min'] = 'The content field at least have 15 characters for ' . $language->name . ' language.';
+        // languageId
+        $languageId = $req->language_id;
+        if($languageId == null){
+            $languageId = $information['feature_language']->id;
         }
 
+        $information['this_languages'] = Language::where('id', $languageId)->first();
+        $information['categories'] = PostCategory::where('user_id', $user->id)
+        ->where('language_id', $information['this_languages']->id)
+        ->get();
 
-        $validator = Validator::make($request->all(), $rules, $messages);
-        if ($validator->fails()) {
-            $errors = $validator->errors()->all();
-            $errorMessage = implode(', ', $errors);
-            return response()->json(['error' => $errorMessage], 422);
-        }
+        // content 
+        $information["post"] = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
+        $information["content"] = PostContent::where('user_id', $user->id)->where('language_id', $languageId)->where('post_id', $information["post"]->id)->first();
 
-        $post = new Post();
-        $post->thumbnail_image = $request->thumbnail_image;
-        $post->slider_images = json_encode([$request->galleries]);
-        $post->slider_post_image = $request->post_slider_images;
-        $post->serial_number = $request->serial_number;
-        $post->user_id = $user->id;
+        return response()->json($information);
+    }
+    public function postAdd($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $post = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
+        $post->is_featured = 0;
         $post->save();
 
-        $slugArray = [];
-        foreach ($languages as $language) {
-            $postContent = new PostContent();
-            $postContent->language_id = $language->id;
-            $postContent->user_id = $user->id;
-            $postContent->post_category_id = $request[$language->code . '_category'];
-            $postContent->post_id = $post->id;
-            $postContent->title = $request[$language->code . '_title'];
-            $postContent->slug = make_slug($request[$language->code . '_title']);
-            $postContent->author = $request[$language->code . '_author'];
-            $postContent->content = Purifier::clean($request[$language->code . '_content']);
-            $postContent->meta_keywords = $request[$language->code . '_meta_keywords'];
-            $postContent->meta_description = $request[$language->code . '_meta_description'];
-            $postContent->save();
-
-            $slugArray[] =
-            [
-                $language->code => make_slug($request[$language->code . '_title'])
-            ];
-        }
+        $postContent = PostContent::where('post_contents.user_id', $user->id)
+        ->where('post_contents.post_id', $post->id)
+        ->join('user_languages', 'post_contents.language_id', '=', 'user_languages.id')
+        ->select('user_languages.code as language_code', 'post_contents.slug')
+        ->get();
+        $slugArray = $postContent->map(function ($content) {
+            return [$content->language_code => $content->slug];
+        });
+        $slugArray = $slugArray->toArray();
+        
+        $all_meta_keyword_ids = PostContent::where('user_id', $user->id)
+        ->where('post_id', $post->id)
+        ->pluck('meta_keyword_ids')
+        ->flatten()
+        ->implode(',');
 
         $postPassingData = [
             'post_id' => $post->id,
-            "post_slug" => $slugArray
+            "post_slug" => $slugArray,
+            "all_meta_keyword_ids" => $all_meta_keyword_ids,
         ];
 
         return response()->json(['status' => true, 'success' => 'Post added successfully!', "post_data" => $postPassingData], 200);

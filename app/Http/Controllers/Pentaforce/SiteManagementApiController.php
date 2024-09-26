@@ -558,9 +558,6 @@ class SiteManagementApiController extends Controller
         $user = User::find(Crypt::decrypt($crypt));
         $data['languages'] = Language::where('user_id', $user->id)->get();
 
-        $data['langCount'] = Language::where('user_id', $user->id)->count();
-        $data['langLimit'] = UserPermissionHelper::currentPackagePermission($user->id)->language_limit;
-
         return response()->json($data);
     }
     public function languageAdd(Request $request, $crypt)

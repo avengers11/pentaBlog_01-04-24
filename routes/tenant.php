@@ -713,6 +713,10 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::get('/post-create/{crypt}', 'postCreate')->name('postCreate');
         Route::post('/post-add/{crypt}', 'postAdd')->name('postAdd');
 
+        Route::get('/post-create-perticles/{crypt}', 'postCreatePerticles')->name('postCreatePerticles');
+        Route::post('/post-save/{crypt}', 'postSave')->name('postSave');
+        Route::post('/post-add-images-upload/{crypt}', 'postAddImagesUpload')->name('postAddImagesUpload');
+
         Route::get('/post-edit/{crypt}', 'postEdit')->name('postEdit');
         Route::post('/post-update/{crypt}', 'postUpdate')->name('postUpdate');
         Route::post('/post-slider-update/{crypt}', 'postSliderUpdate')->name('postSliderUpdate');
