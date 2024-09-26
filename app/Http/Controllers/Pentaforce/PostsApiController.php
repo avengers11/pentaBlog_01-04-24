@@ -265,8 +265,7 @@ class PostsApiController extends Controller
 
         // content 
         $information["post"] = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
-        return $user;
-
+        
         $information["content"] = PostContent::where('user_id', $user->id)->where('language_id', $languageId)->where('post_id', $information["post"]->id)->first();
 
         return response()->json($information);
