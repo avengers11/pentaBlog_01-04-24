@@ -221,7 +221,7 @@ class PostsApiController extends Controller
             $isNew = true;
 
             $post = new Post();
-            $post->slider_images = json_encode([]);
+            $post->slider_images = json_encode(['thumbnail_image.png']);
             $post->thumbnail_image = 'thumbnail_image.png';
             $post->serial_number =  isset($latestPost->serial_number) ? $latestPost->serial_number + 1 : 1;
             $post->is_featured = 10;
