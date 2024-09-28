@@ -215,9 +215,10 @@ class PostsApiController extends Controller
         ->where('language_id', $information['feature_language']->id)
         ->get();
 
-        
+        $isNew = false;
         if(!Post::where('user_id', $user->id)->where('is_featured', 10)->exists()){
             $latestPost = Post::where('user_id', $user->id)->latest()->first();
+            $isNew == true;
 
             $post = new Post();
             $post->slider_images = json_encode([]);
@@ -226,6 +227,7 @@ class PostsApiController extends Controller
             $post->is_featured = 10;
             $post->user_id = $user->id;
             $post->save();
+            
             foreach ($information['languages'] as $language) {
                 $postContent = new PostContent();
                 $postContent->language_id = $language->id;
@@ -241,7 +243,7 @@ class PostsApiController extends Controller
         }
         $information["post"] = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
 
-        return response()->json($information);
+        return response()->json(["information" => $information, "isNew" => $isNew]);
     }
     public function postCreatePerticles($crypt, Request $req)
     {
@@ -255,8 +257,6 @@ class PostsApiController extends Controller
         if($languageId == null){
             $languageId = $information['feature_language']->id;
         }
-
-
         $information['this_languages'] = Language::where('id', $languageId)->first();
 
         $information['categories'] = PostCategory::where('user_id', $user->id)
@@ -265,7 +265,6 @@ class PostsApiController extends Controller
 
         // content 
         $information["post"] = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
-        
         $information["content"] = PostContent::where('user_id', $user->id)->where('language_id', $languageId)->where('post_id', $information["post"]->id)->first();
 
         return response()->json($information);
