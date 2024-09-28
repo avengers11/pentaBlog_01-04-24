@@ -218,7 +218,7 @@ class PostsApiController extends Controller
         $isNew = false;
         if(!Post::where('user_id', $user->id)->where('is_featured', 10)->exists()){
             $latestPost = Post::where('user_id', $user->id)->latest()->first();
-            $isNew == true;
+            $isNew = true;
 
             $post = new Post();
             $post->slider_images = json_encode([]);
