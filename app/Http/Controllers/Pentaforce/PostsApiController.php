@@ -303,6 +303,16 @@ class PostsApiController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Post images successfully updated!'], 200);
     }
+    // postAddDelete
+    public function postAddDelete($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        $post = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
+        PostContent::where("post_id", $post->id)->delete();
+
+        return response()->json(['status' => true, 'message' => 'Post successfully deleted!'], 200);
+    }
+
     public function postAdd($crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
