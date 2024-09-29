@@ -17,6 +17,7 @@ use App\Http\Helpers\UserPermissionHelper;
 use App\Models\User\Post;
 use App\Models\User\PostContent;
 use Mews\Purifier\Facades\Purifier;
+use App\Models\User\UserCustomDomain;
 
 class PostsApiController extends Controller
 {
@@ -187,6 +188,7 @@ class PostsApiController extends Controller
             ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
             ->where('post_contents.language_id', '=', $languageId)
             ->where('post_contents.user_id', '=', $user->id)
+            ->where('posts.is_featured', '!=', 10)
             ->orderByDesc('posts.id')
             ->get();
 
@@ -210,10 +212,7 @@ class PostsApiController extends Controller
 
         $information['languages'] = Language::where('user_id', $user->id)->get();
         $information['feature_language'] = Language::where('is_default', 1)->where('user_id', $user->id)->first();
-
-        $information['categories'] = PostCategory::where('user_id', $user->id)
-        ->where('language_id', $information['feature_language']->id)
-        ->get();
+        $information['categories'] = PostCategory::where('user_id', $user->id) ->where('language_id', $information['feature_language']->id)->get();
 
         $isNew = false;
         if(!Post::where('user_id', $user->id)->where('is_featured', 10)->exists()){
@@ -251,6 +250,9 @@ class PostsApiController extends Controller
 
         $information['languages'] = Language::where('user_id', $user->id)->get();
         $information['feature_language'] = Language::where('is_default', 1)->where('user_id', $user->id)->first();
+        $information['domain'] = UserCustomDomain::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+        $information['basic'] = BasicSetting::where('user_id', $user->id)->first();
+        $information['user'] = $user;
 
         // languageId
         $languageId = $req->language_id;
@@ -258,11 +260,7 @@ class PostsApiController extends Controller
             $languageId = $information['feature_language']->id;
         }
         $information['this_languages'] = Language::where('id', $languageId)->first();
-
-        $information['categories'] = PostCategory::where('user_id', $user->id)
-        ->where('language_id', $information['this_languages']->id)
-        ->get();
-
+        $information['categories'] = PostCategory::where('user_id', $user->id)->where('language_id', $information['this_languages']->id)->get();
         // content 
         $information["post"] = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
         $information["content"] = PostContent::where('user_id', $user->id)->where('language_id', $languageId)->where('post_id', $information["post"]->id)->first();

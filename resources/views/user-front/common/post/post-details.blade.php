@@ -48,7 +48,7 @@
         <div class="col-lg-8">
           <div class="blog_details_wrapper">
             <div class="post_content pb-70">
-              @php $sldImgs = json_decode($details->post->slider_images); @endphp
+              @php $sldImgs = !empty($details->post->slider_images) ? json_decode($details->post->slider_images) : ""; @endphp
 
               <div class="img-wrapper">
                 <img style="width:100%; height:auto" src="{{ $sldImgs[0] != null ? Storage::url($sldImgs[0]) : asset('assets/admin/img/noimage.jpg') }}" class="lazy" alt="slider image">

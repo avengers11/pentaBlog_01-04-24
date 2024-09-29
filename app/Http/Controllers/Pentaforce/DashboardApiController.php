@@ -36,6 +36,7 @@ class DashboardApiController extends Controller
         $data['subscs_count'] = Subscriber::where('user_id', $user->id)->count();
 
         $data['posts'] = Post::join('post_contents', 'posts.id', '=', 'post_contents.post_id')
+            ->where('posts.is_featured', '!=', 10)
             ->where('post_contents.language_id', '=', $langId)
             ->where('post_contents.user_id', '=', $user->id)
             ->orderByDesc('posts.id')
@@ -73,6 +74,7 @@ class DashboardApiController extends Controller
         $langId = $user->languages()->where('is_default', 1)->firstOrFail()->id;
 
         $posts = Post::join('post_contents', 'posts.id', '=', 'post_contents.post_id')
+            ->where('posts.is_featured', '!=', 10)
             ->where('post_contents.language_id', '=', $langId)
             ->where('post_contents.user_id', '=', $user->id)
             ->orderByDesc('posts.id')

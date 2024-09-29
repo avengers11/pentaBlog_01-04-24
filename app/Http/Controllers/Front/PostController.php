@@ -217,6 +217,7 @@ class PostController extends Controller
         $post = Post::find($postId);
         $viewCount = PostView::where('post_id', $postId)
                              ->where('author_id', $authorId)
+                             ->where('is_featured', '!=', 10)
                              ->count();
 
         $post->update(['views' => $viewCount]);
