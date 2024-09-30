@@ -262,8 +262,9 @@ class PostsApiController extends Controller
         $information['this_languages'] = Language::where('id', $languageId)->first();
         $information['categories'] = PostCategory::where('user_id', $user->id)->where('language_id', $information['this_languages']->id)->get();
         // content 
-        $information["post"] = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
+        $information["post"] = Post::find($req->post_id);
         $information["content"] = PostContent::where('user_id', $user->id)->where('language_id', $languageId)->where('post_id', $information["post"]->id)->first();
+        $information["type"] = $information["post"]->is_featured == 10 ? 0 : 1;
 
         return response()->json($information);
     }
@@ -272,7 +273,7 @@ class PostsApiController extends Controller
     public function postSave(Request $req, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $post = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
+        $post = Post::find($req->post_id);
 
         $postContent = PostContent::where('user_id', $user->id)->where('language_id', $req->language_id)->where('post_id', $post->id)->first();
         $postContent->post_category_id = $req->post_category_id;
@@ -348,25 +349,12 @@ class PostsApiController extends Controller
     {
         $user = User::find(Crypt::decrypt($crypt));
 
-        $data["langs"] = Language::where('user_id', $user->id)->orderBy('is_default', 'desc')->get();
-        $data["post"] = Post::where('id', $request->post_id)->first();
+        $information['languages'] = Language::where('user_id', $user->id)->get();
+        $information['feature_language'] = Language::where('is_default', 1)->where('user_id', $user->id)->first();
+        $information['categories'] = PostCategory::where('user_id', $user->id) ->where('language_id', $information['feature_language']->id)->get();
+        $information["post"] = Post::find($request->post_id);
 
-        $categories = [];
-        $content = [];
-        foreach ($data["langs"] as $value) {
-            $contents = PostContent::where('post_id', $request->post_id)->first();
-            $categories = PostCategory::where('language_id', $value->id)->where('user_id', $user->id)->orderBy('id', 'DESC')->first();
-
-            $content[$value->code] = [
-                $contents,
-                $categories
-            ];
-
-        }
-        $data['categories'] = $categories;
-        $data['content'] = $content;
-
-        return response()->json($data);
+        return response()->json(["information" => $information]);
     }
     public function postUpdate(Request $request, $crypt)
     {
