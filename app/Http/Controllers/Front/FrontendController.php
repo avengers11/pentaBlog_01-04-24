@@ -457,6 +457,7 @@ class FrontendController extends Controller
             ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
             ->where('post_contents.language_id', '=', $language->id)
             ->where('posts.user_id', '=', $user->id)
+            ->where('posts.is_featured', '!=', 10)
             ->orderByDesc('posts.created_at')
             ->limit($limit)
             ->get();
