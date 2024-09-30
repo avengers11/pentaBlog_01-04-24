@@ -34,6 +34,7 @@
                             ->where('post_contents.language_id', '=', $langId)
                             ->where('post_contents.post_category_id', '=', $featPostCategory->id)
                             ->where('posts.user_id', $user->id)
+                            ->where('posts.is_featured', '!=', 10)
                             ->orderBy('posts.serial_number', 'ASC')
                             ->limit(3)
                             ->get();
