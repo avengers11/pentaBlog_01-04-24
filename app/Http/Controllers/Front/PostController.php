@@ -167,6 +167,7 @@ class PostController extends Controller
             ->where('posts.views', '!=', 0)
             ->where('post_contents.language_id', '=', $language->id)
             ->where('posts.user_id', $userId)
+            ->where('posts.is_featured', '!=', 10)
             ->orderByDesc('posts.views')
             ->limit(3)
             ->get();
