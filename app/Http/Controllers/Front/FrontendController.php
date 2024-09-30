@@ -416,6 +416,7 @@ class FrontendController extends Controller
             ->where('post_contents.language_id', '=', $language->id)
             ->where('is_slider', '=', 1)
             ->where('posts.user_id', '=', $user->id)
+            ->where('posts.is_featured', '!=', 10)
             ->orderBy('posts.serial_number', 'ASC')
             ->get();
 
@@ -425,6 +426,7 @@ class FrontendController extends Controller
             ->where('post_contents.language_id', '=', $language->id)
             ->where('is_hero_post', '=', 1)
             ->where('image_size_type','=','side_post')
+            ->where('posts.is_featured', '!=', 10)
             ->where('posts.user_id', '=', $user->id)
             ->orderBy('posts.serial_number', 'ASC')
             ->get();
@@ -443,6 +445,7 @@ class FrontendController extends Controller
                 ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
                 ->where('post_contents.language_id', '=', $language->id)
                 ->where('is_featured', '=', 1)
+                ->where('posts.is_featured', '!=', 10)
                 ->where('posts.user_id', '=', $user->id)
                 ->orderBy('posts.serial_number', 'ASC')
                 ->get();
@@ -483,6 +486,7 @@ class FrontendController extends Controller
                 ->where('posts.views', '!=', 0)
                 ->where('post_contents.language_id', '=', $language->id)
                 ->where('posts.user_id', '=', $user->id)
+                ->where('posts.is_featured', '!=', 10)
                 ->orderByDesc('posts.views')
                 ->limit(3)
                 ->get();
