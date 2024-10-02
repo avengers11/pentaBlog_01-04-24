@@ -26,6 +26,9 @@ class PageContent extends Model
     'meta_keywords',
     'meta_description'
   ];
+  protected $casts = [
+    'preview' => 'array'
+  ];
 
   public function contentLang()
   {

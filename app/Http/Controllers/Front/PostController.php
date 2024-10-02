@@ -143,6 +143,71 @@ class PostController extends Controller
         return view('user-front.common.post.post-details', $queryResult);
     }
 
+    // postPreviewDetails
+    public function postPreviewDetails(Request $request, $domain, $content)
+    {
+        $user = getUser();
+
+        $language = $this->getUserCurrentLanguage($user->id);
+        $queryResult['pageHeading'] = $this->getUserPageHeading($language,$user->id);
+        $queryResult['bgImg'] = $this->getUserBreadcrumb($user->id);
+        $post_id = PostContent::query()
+                              ->where('id', $content)
+                              ->firstOrFail()
+                              ->post_id;
+
+        $details = PostContent::with('post')
+            ->where('id', $content)
+            ->where('user_id',$user->id)
+            ->firstOrFail();
+
+        if (Auth::guard('customer')->check() == true) {
+            $authUser = Auth::guard('customer')->user();
+            $info = BookmarkPost::where('user_id', $authUser->id)
+                ->where('post_id', $details->post_id)
+                ->first();
+
+            if (is_null($info)) {
+                $queryResult['postBookmarked'] = 0;
+            } else {
+                $queryResult['postBookmarked'] = 1;
+            }
+        }
+
+        $categoryId = PostContent::where('language_id', $language->id)
+            ->where('post_id', $details->post_id)
+            ->where('user_id',$user->id)
+            ->pluck('post_category_id')
+            ->first();
+
+
+        $queryResult['relatedPosts'] = DB::table('posts')
+            ->join('post_contents', 'posts.id', '=', 'post_contents.post_id')
+            ->where('post_contents.language_id', '=', $language->id)
+            ->where('post_contents.post_category_id', '=', $categoryId)
+            ->where('post_contents.post_id', '!=', $details->post_id)
+            ->where('posts.user_id', '=', $user->id)
+            ->orderBy('posts.serial_number', 'ASC')
+            ->get();
+
+        $queryResult['disqusInfo'] = BasicSetting::where('user_id', $user->id)
+            ->select('disqus_status', 'disqus_short_name')
+            ->first();
+
+        $queryResult['authorInfo'] = $this->getAuthorInfo($language, $user->id);
+
+        $queryResult['popularPosts'] = $this->getPopularPosts($language, $user->id);
+
+        $queryResult['categories'] = $this->getCategories($language, $user->id);
+
+        $queryResult['details'] = $details;
+        $this->viewLog($request, $details->post_id,$user->id);
+
+        $queryResult['preview'] = $details->preview == null ? null : json_decode($details->preview);
+
+        return view('user-front.common.post.preview-post-details', $queryResult);
+    }
+
     /**
      * Get information of author.
      *

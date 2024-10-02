@@ -708,16 +708,19 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::post('/category-delete/{crypt}', 'categoryDelete')->name('categoryDelete');
 
         // post
-        Route::get('/post/{crypt}', 'post')->name('post');
-        Route::get('/total-post/{crypt}', 'totalPost')->name('totalPost');
-        Route::get('/post-create/{crypt}', 'postCreate')->name('postCreate');
-        Route::post('/post-add/{crypt}', 'postAdd')->name('postAdd');
-
+        Route::post('/post-preview-clear/{crypt}', 'postPreviewClear')->name('postPreviewClear');
         Route::get('/post-create-perticles/{crypt}', 'postCreatePerticles')->name('postCreatePerticles');
         Route::post('/post-save/{crypt}', 'postSave')->name('postSave');
         Route::post('/post-add-images-upload/{crypt}', 'postAddImagesUpload')->name('postAddImagesUpload');
+        Route::post('/post-published/{crypt}', 'postPublished')->name('postPublished');
+
+        // add 
+        Route::get('/total-post/{crypt}', 'totalPost')->name('totalPost');
+        Route::get('/post-create/{crypt}', 'postCreate')->name('postCreate');
+        Route::get('/post/{crypt}', 'post')->name('post');
         Route::post('/post-add-delete/{crypt}', 'postAddDelete')->name('postAddDelete');
 
+        // edit 
         Route::get('/post-edit/{crypt}', 'postEdit')->name('postEdit');
         Route::post('/post-update/{crypt}', 'postUpdate')->name('postUpdate');
         Route::post('/post-slider-update/{crypt}', 'postSliderUpdate')->name('postSliderUpdate');

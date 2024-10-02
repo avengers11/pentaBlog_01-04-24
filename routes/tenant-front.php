@@ -40,6 +40,9 @@ Route::group(['domain' => $domain, 'prefix' => $prefix], function () {
     Route::get('/post/{slug}', 'Front\PostController@postDetails')->name('front.user.post_details');
     Route::post('/post/{id}/make-bookmark', 'Front\PostController@makeBookmark')->name('front.user.make_bookmark');
 
+    Route::get('/post/preview/{content}', 'Front\PostController@postPreviewDetails');
+
+
     Route::post('/subscribe', 'User\SubscriberController@store')->name('front.user.subscriber');
     Route::get('/contact', 'Front\CustomerController@contact')->name('front.user.contact');
     Route::post('/contact/message', 'Front\CustomerController@contactMessage')->name('front.contact.message');

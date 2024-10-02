@@ -220,7 +220,7 @@ class PostsApiController extends Controller
             $isNew = true;
 
             $post = new Post();
-            $post->slider_images = json_encode(['thumbnail_image.png']);
+            $post->slider_images = json_encode([]);
             $post->thumbnail_image = 'thumbnail_image.png';
             $post->serial_number =  isset($latestPost->serial_number) ? $latestPost->serial_number + 1 : 1;
             $post->is_featured = 10;
@@ -247,22 +247,37 @@ class PostsApiController extends Controller
     public function postCreatePerticles($crypt, Request $req)
     {
         $user = User::find(Crypt::decrypt($crypt));
-
         $information['languages'] = Language::where('user_id', $user->id)->get();
         $information['feature_language'] = Language::where('is_default', 1)->where('user_id', $user->id)->first();
-        $information['domain'] = UserCustomDomain::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
-        $information['basic'] = BasicSetting::where('user_id', $user->id)->first();
-        $information['user'] = $user;
-
+        $information["post"] = Post::find($req->post_id);
         // languageId
         $languageId = $req->language_id;
         if($languageId == null){
             $languageId = $information['feature_language']->id;
         }
+
+        // create new  
+        if(!PostContent::where('user_id', $user->id)->where('language_id', $languageId)->where('post_id', $information["post"]->id)->exists()){
+            $postContent = new PostContent();
+            $postContent->language_id = $languageId;
+            $postContent->user_id = $user->id;
+            $postContent->post_id = $information["post"]->id;
+            $postContent->post_category_id = 0;
+            $postContent->title = "";
+            $postContent->slug = "";
+            $postContent->author = "";
+            $postContent->content = "";
+            $postContent->save();
+        }
+
+        $information['domain'] = UserCustomDomain::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+        $information['basic'] = BasicSetting::where('user_id', $user->id)->first();
+        $information['user'] = $user;
+
+        
         $information['this_languages'] = Language::where('id', $languageId)->first();
         $information['categories'] = PostCategory::where('user_id', $user->id)->where('language_id', $information['this_languages']->id)->get();
         // content 
-        $information["post"] = Post::find($req->post_id);
         $information["content"] = PostContent::where('user_id', $user->id)->where('language_id', $languageId)->where('post_id', $information["post"]->id)->first();
         $information["type"] = $information["post"]->is_featured == 10 ? 0 : 1;
 
@@ -270,23 +285,47 @@ class PostsApiController extends Controller
     }
 
     // save 
-    public function postSave(Request $req, $crypt)
+    public function postSave(Request $request, $crypt)
     {
         $user = User::find(Crypt::decrypt($crypt));
-        $post = Post::find($req->post_id);
 
-        $postContent = PostContent::where('user_id', $user->id)->where('language_id', $req->language_id)->where('post_id', $post->id)->first();
-        $postContent->post_category_id = $req->post_category_id;
-        $postContent->title = $req->title;
-        $postContent->slug = make_slug($req->title);
-        $postContent->author = $req->author;
-        $postContent->content = Purifier::clean($req->content);
-        $postContent->meta_keywords = $req->meta_keywords;
-        $postContent->meta_keyword_ids = $req->meta_keyword_ids;
-        $postContent->meta_description = $req->meta_description;
-        $postContent->save();
+        // $postContent = PostContent::where('user_id', $user->id)->where('language_id', $req->language_id)->where('post_id', $post->id)->first();
+        // $postContent->post_category_id = $req->post_category_id;
+        // $postContent->title = $req->title;
+        // $postContent->slug = make_slug($req->title);
+        // $postContent->author = $req->author;
+        // $postContent->content = Purifier::clean($req->content);
+        // $postContent->meta_keywords = $req->meta_keywords;
+        // $postContent->meta_keyword_ids = $req->meta_keyword_ids;
+        // $postContent->meta_description = $req->meta_description;
+        // $postContent->save();
 
-        return response()->json(['status' => true, 'message' => 'Post successfully saved!'], 200);
+        $blog = PostContent::where('user_id', $user->id)->where('language_id', $request->language_id)->where('post_id', $request->post_id)->first();
+        $newPreview = [
+            "title" => $request->title,
+            "slug" => make_slug($request->title),
+            "content" => Purifier::clean($request->content),
+            "author" => $request->author,
+            "meta_keywords" => $request->meta_keywords,
+            "meta_keyword_ids" => $request->meta_keyword_ids,
+            "meta_description" => $request->meta_description,
+            "post_category_id" => $request->post_category_id
+        ];
+        $blog->preview = json_encode($newPreview);
+        $blog->save();
+
+        return response()->json(["status" => true, 'message' => "Your post successfully saved.", "preview" => json_decode($blog->preview)], 200);
+    }
+    // postPreviewClear
+    public function postPreviewClear(Request $request, $crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+
+        $blog = PostContent::where('user_id', $user->id)->where('language_id', $request->language_id)->where('post_id', $request->post_id)->first();
+        $blog->preview = null;
+        $blog->save();
+
+        return response()->json(["status" => true, 'message' => "Your post preview successfully clear."], 200);
     }
     // postAddImagesUpload
     public function postAddImagesUpload(Request $request, $crypt)
@@ -313,37 +352,81 @@ class PostsApiController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Post successfully deleted!'], 200);
     }
-
-    public function postAdd($crypt)
+    public function postPublished(Request $request, $crypt)
     {
-        $user = User::find(Crypt::decrypt($crypt));
-        $post = Post::where('user_id', $user->id)->where('is_featured', 10)->first();
-        $post->is_featured = 0;
-        $post->save();
 
-        $postContent = PostContent::where('post_contents.user_id', $user->id)
-        ->where('post_contents.post_id', $post->id)
-        ->join('user_languages', 'post_contents.language_id', '=', 'user_languages.id')
-        ->select('user_languages.code as language_code', 'post_contents.slug')
-        ->get();
-        $slugArray = $postContent->map(function ($content) {
-            return [$content->language_code => $content->slug];
-        });
-        $slugArray = $slugArray->toArray();
-        
-        $all_meta_keyword_ids = PostContent::where('user_id', $user->id)
-        ->where('post_id', $post->id)
-        ->pluck('meta_keyword_ids')
-        ->flatten()
-        ->implode(',');
+        // try {
+            // DB::transaction(function () use ($crypt, $request) {
+                // Decrypt user
+                $user = User::find(Crypt::decrypt($crypt));
 
-        $postPassingData = [
-            'post_id' => $post->id,
-            "post_slug" => $slugArray,
-            "all_meta_keyword_ids" => $all_meta_keyword_ids,
-        ];
+                // Update the previous featured post
+                $post = Post::find($request->post_id);
 
-        return response()->json(['status' => true, 'success' => 'Post added successfully!', "post_data" => $postPassingData], 200);
+                // thumbnail_image
+                if(empty($post->thumbnail_image) || $post->thumbnail_image == "thumbnail_image.png"){
+                    return response()->json(['status' => false, 'message' => 'Thumnail image is required!']);
+                }
+                // slider_images
+                if(empty($post->slider_images) || $post->slider_images == "[]"){
+                    return response()->json(['status' => false, 'message' => 'Slider image is required!']);
+                }
+
+                $post->is_featured = $post->is_featured == 10 ? 0 : $post->is_featured;
+                $post->save();
+
+                // Publish the current content
+                $postContent = PostContent::where('user_id', $user->id)
+                                        ->where('language_id', $request->language_id)
+                                        ->where('post_id', $request->post_id)
+                                        ->first();
+                
+                $preview = $postContent->preview != null ? json_decode($postContent->preview) : null;
+
+                if ($preview != null) {
+                    $postContent->post_category_id = $preview->post_category_id;
+                    $postContent->title = $preview->title;
+                    $postContent->slug = make_slug($preview->title);
+                    $postContent->author = $preview->author;
+                    $postContent->content = Purifier::clean($preview->content);
+                    $postContent->meta_keywords = $preview->meta_keywords;
+                    $postContent->meta_keyword_ids = $preview->meta_keyword_ids;
+                    $postContent->meta_description = $preview->meta_description;
+                    $postContent->preview = null;
+                    $postContent->save();
+                }
+
+                // Fetch slugs for the post content
+                $postContent = PostContent::where('post_contents.user_id', $user->id)
+                    ->where('post_contents.post_id', $post->id)
+                    ->join('user_languages', 'post_contents.language_id', '=', 'user_languages.id')
+                    ->select('user_languages.code as language_code', 'post_contents.slug')
+                    ->get();
+
+                $slugArray = $postContent->map(function ($content) {
+                    return [$content->language_code => $content->slug];
+                })->toArray();
+
+                // Fetch all meta keyword IDs
+                $all_meta_keyword_ids = PostContent::where('user_id', $user->id)
+                    ->where('post_id', $post->id)
+                    ->pluck('meta_keyword_ids')
+                    ->flatten()
+                    ->implode(',');
+
+                // Prepare data for response
+                $postPassingData = [
+                    'post_id' => $post->id,
+                    'post_slug' => $slugArray,
+                    'all_meta_keyword_ids' => $all_meta_keyword_ids,
+                ];
+
+                // Return success response
+                return response()->json(['status' => true, 'message' => 'Post successfully published!', 'post_data' => $postPassingData], 200);
+            // });
+        // } catch (\Exception $e) {
+        //     return response()->json(['status' => false, 'error' => 'Failed to add the post. Please try again.'], 500);
+        // }
     }
     public function postEdit($crypt, Request $request)
     {

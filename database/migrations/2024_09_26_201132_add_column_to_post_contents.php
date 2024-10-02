@@ -15,6 +15,7 @@ class AddColumnToPostContents extends Migration
     {
         Schema::table('post_contents', function (Blueprint $table) {
             $table->text('meta_keyword_ids')->nullable();
+            $table->json('preview')->nullable();
         });
     }
 
