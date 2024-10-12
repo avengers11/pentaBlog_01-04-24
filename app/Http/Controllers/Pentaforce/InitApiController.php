@@ -20,4 +20,12 @@ class InitApiController extends Controller
         ->get();
         return response()->json(['languages' => $languages]);
     }
+
+
+    //languageDefault
+    public function languageDefault($crypt)
+    {
+        $user = User::find(Crypt::decrypt($crypt));
+        return response()->json(defaultLanguage($user->id));
+    }
 }

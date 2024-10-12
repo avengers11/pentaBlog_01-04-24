@@ -49,6 +49,8 @@ class DashboardApiController extends Controller
         ->select('theme_version')
         ->first();
 
+        $data['language_keywords'] = defaultLanguage($user->id);
+
         return response()->json($data);
     }
 

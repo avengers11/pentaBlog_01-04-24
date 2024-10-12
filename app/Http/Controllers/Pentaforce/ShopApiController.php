@@ -82,6 +82,7 @@ class ShopApiController extends Controller
             ->orderBy('id', 'DESC')
             ->get();
         $data['lang_id'] = $languageId;
+        $data['languages'] = Language::where('user_id', $user->id)->get();
 
         return response()->json($data);
     }
@@ -458,6 +459,13 @@ class ShopApiController extends Controller
             $categories[$value->code] = UserItemCategory::where('language_id', $value->id)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
         }
         $data['categories'] = $categories;
+
+
+        $sub_categories = [];
+        foreach ($data["langs"] as $value) {
+            $sub_categories[$value->code] = UserItemSubCategory::where('language_id', $value->id)->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        }
+        $data['sub_categories'] = $sub_categories;
 
         return response()->json($data);
     }

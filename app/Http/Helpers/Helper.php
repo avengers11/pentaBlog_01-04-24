@@ -548,3 +548,12 @@ function processFile($file, $file_path = 'attachments')
     Storage::disk('s3')->put($name, file_get_contents($file), 'public');
     return $name;
 }
+
+
+function defaultLanguage($user_id)
+{
+    $defaultLanguage = \App\Models\User\Language::where('user_id', $user_id)
+    ->where('is_default', true)
+    ->first(['keywords']);
+    return $defaultLanguage ? json_decode($defaultLanguage->keywords) : null;
+}

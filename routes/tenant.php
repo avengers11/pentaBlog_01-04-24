@@ -533,6 +533,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
     //dashboard
     Route::group(['prefix' => 'init'], function () {
         Route::get('language/{crypt}', 'Pentaforce\InitApiController@language');
+        Route::get('language-default/{crypt}', 'Pentaforce\InitApiController@languageDefault');
     });
 
     //dashboard
