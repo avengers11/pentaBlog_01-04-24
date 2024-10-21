@@ -60,10 +60,9 @@
                 <div class="about-slider-one">
                     @foreach ($sldImgs as $sldImg)
                         <div class="olima_img">
-                            <a href="{{ asset('assets/user/img/authors/slider-images/' . $sldImg->image) }}"
-                                class="img-popup">
-                                <img data-src="{{ asset('assets/user/img/authors/slider-images/' . $sldImg->image) }}"
-                                    class="img-fluid lazy" alt="author image">
+                            <a href="{{ $sldImg->image != null ? Storage::url($sldImg->image) : asset('assets/admin/img/noimage.jpg') }}"
+                                class="img-popup"> 
+                                <img data-src="{{ $sldImg->image != null ? Storage::url($sldImg->image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="author image">
                             </a>
                         </div>
                     @endforeach
@@ -104,11 +103,9 @@
                     <div class="col-lg-12">
                         <div class="grid_item">
                             <div class="post_img">
-                                <img data-src="{{ asset('assets/user/img/' . $authorInfo->video_background_image) }}"
-                                    class="img-fluid lazy" alt="background image">
+                                <img data-src="{{ $authorInfo->video_background_image != null ? Storage::url($authorInfo->video_background_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="background image">
                                 <div class="post_button">
-                                    <a href="{{ $authorInfo->link }}" class="play_btn mfp-iframe"><i
-                                            class="fas fa-play"></i></a>
+                                    <a href="{{ $authorInfo->link }}" class="play_btn mfp-iframe"><i class="fas fa-play"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -143,8 +140,7 @@
                             </ul>
                             <p>{{ $testimonial->comment }}</p>
                             <div class="author_box">
-                                <img data-src="{{ asset('assets/user/img/testimonials/' . $testimonial->client_image) }}"
-                                    class="img-fluid lazy" alt="client image">
+                                <img data-src="{{ $testimonial->client_image != null ? Storage::url($testimonial->client_image) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="client image">
                                 <span>{{ $testimonial->client_name }}</span>
                             </div>
                         </div>
@@ -164,8 +160,7 @@
                     @foreach ($partners as $partner)
                         <a class="sponsor_box d-block" href="{{ $partner->url }}" target="_blank">
                             <div class="olima_img">
-                                <img data-src="{{ asset('assets/user/img/brands/' . $partner->brand_img) }}"
-                                    class="img-fluid lazy" alt="image">
+                                <img data-src="{{ $partner->brand_img != null ? Storage::url($partner->brand_img) : asset('assets/admin/img/noimage.jpg') }}" class="img-fluid lazy" alt="image">
                             </div>
                         </a>
                     @endforeach
