@@ -709,6 +709,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::post('/category-delete/{crypt}', 'categoryDelete')->name('categoryDelete');
 
         // post
+        Route::get('/post-data/{crypt}', 'getPostData')->name('getPostData');
         Route::post('/post-preview-clear/{crypt}', 'postPreviewClear')->name('postPreviewClear');
         Route::get('/post-create-perticles/{crypt}', 'postCreatePerticles')->name('postCreatePerticles');
         Route::post('/post-save/{crypt}', 'postSave')->name('postSave');
@@ -716,6 +717,7 @@ Route::group(['prefix' => 'pentaforce'], function () {
         Route::post('/post-published/{crypt}', 'postPublished')->name('postPublished');
 
         // add 
+        Route::post('/post-add-clear/{crypt}', 'postAddClear')->name('postAddClear');
         Route::get('/total-post/{crypt}', 'totalPost')->name('totalPost');
         Route::get('/post-create/{crypt}', 'postCreate')->name('postCreate');
         Route::get('/post/{crypt}', 'post')->name('post');
