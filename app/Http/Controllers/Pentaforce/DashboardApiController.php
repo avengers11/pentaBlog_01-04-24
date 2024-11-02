@@ -40,7 +40,7 @@ class DashboardApiController extends Controller
             ->where('post_contents.language_id', '=', $langId)
             ->where('post_contents.user_id', '=', $user->id)
             ->orderByDesc('posts.id')
-            ->limit(10)
+            // ->limit(10)
             ->get();
 
         $data['post_count'] = $user->posts->count();
@@ -48,6 +48,7 @@ class DashboardApiController extends Controller
         $data['theme'] = BasicSetting::where('user_id', $user->id)
         ->select('theme_version')
         ->first();
+        $data['basic'] = BasicSetting::where('user_id', $user->id)->first();
 
         $data['language_keywords'] = defaultLanguage($user->id);
 
