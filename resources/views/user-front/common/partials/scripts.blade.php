@@ -13,6 +13,10 @@ gtag('js', new Date());
 gtag('config', '{{ $websiteInfo->measurement_id }}');
 </script>
 @endif
+
+<script data-host="{{ env("PENTA_ANALYTICS_URL") }}" data-dnt="false" src="{{ env("PENTA_ANALYTICS_URL") }}/js/script.js" id="ZwSg9rf6GA" async defer></script>
+
+
 <script>
 "use strict";
 var mainurl = "{{ route('front.user.detail.view', getParam()) }}";

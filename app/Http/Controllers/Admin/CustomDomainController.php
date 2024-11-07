@@ -78,22 +78,26 @@ class CustomDomainController extends Controller
             if (!empty($rcDomain->user)) {
                 $user = $rcDomain->user;
                 $bs = BasicSetting::firstOrFail();
-                $mailer = new MegaMailer();
-                $data = [
-                    'toMail' => $user->email,
-                    'toName' => $user->fname,
-                    'username' => $user->username,
-                    'requested_domain' => $rcDomain->requested_domain,
-                    'previous_domain' => $rcDomain->current_domain ?? 'Not Available',
-                    'website_title' => $bs->website_title,
-                    'templateType' => 'custom_domain_connected',
-                    'type' => 'customDomainConnected'
-                ];
-                $mailer->mailFromAdmin($data);
+                // $mailer = new MegaMailer();
+                // $data = [
+                //     'toMail' => $user->email,
+                //     'toName' => $user->fname,
+                //     'username' => $user->username,
+                //     'requested_domain' => $rcDomain->requested_domain,
+                //     'previous_domain' => $rcDomain->current_domain ?? null,
+                //     'website_title' => $bs->website_title,
+                //     'templateType' => 'custom_domain_connected',
+                //     'type' => 'customDomainConnected'
+                // ];
+                // $mailer->mailFromAdmin($data);
             }
+            // return env('PENTAFORCE_URL');
 
             // call pentaforce api 
-            Http::get(env('PENTAFORCE_URL').'/user/blog/domain/confirmed-domain/'.$user->id);
+            Http::get(env('PENTAFORCE_URL').'/user/blog/domain/confirmed-domain/'.$user->id, [
+                "new_domain" => $rcDomain->requested_domain,
+                "old_domain" => $rcDomain->current_domain
+            ]);
 
 
         } elseif ($request->status == 2) {
@@ -107,7 +111,7 @@ class CustomDomainController extends Controller
                     'toName' => $user->fname,
                     'username' => $user->username,
                     'requested_domain' => $rcDomain->requested_domain,
-                    'current_domain' => $rcDomain->current_domain ?? 'Not Available',
+                    'current_domain' => $rcDomain->current_domain ?? null,
                     'website_title' => $bs->website_title,
                     'templateType' => 'custom_domain_rejected',
                     'type' => 'customDomainRejected'
